@@ -1,0 +1,31 @@
+# Set base image
+FROM python:3.11-slim
+
+# Set work directory
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install psycopg2 dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client gcc python3-dev libpq-dev netcat-openbsd
+
+COPY ./entrypoint.sh /app/entrypoint.sh
+# Install dependencies
+COPY requirements.txt /app/
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Copy the entire project
+COPY . /app/
+
+# Remove Windows line endings from entrypoint.sh and make it executable
+RUN sed -i 's/\r$//g' /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Expose port 8000 for Django
+EXPOSE 8000
+
+# Use the entrypoint.sh script to start Django
+ENTRYPOINT [ "sh", "/app/entrypoint.sh" ]
