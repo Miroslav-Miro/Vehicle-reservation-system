@@ -9,4 +9,5 @@ router.register(r"roles",RoleViewSet,basename="roles")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("auth/register/", RegisterView.as_view(), name="register"),
 ]
