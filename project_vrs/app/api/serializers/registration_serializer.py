@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import *
+from ..models import *
 
 class RegisterSerializer(serializers.ModelSerializer):
     """
@@ -37,9 +37,3 @@ class RegisterSerializer(serializers.ModelSerializer):
             role_id=user_role
         )
         return user
-
-class RoleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Role
-        fields = ['id', 'role_name']
-    

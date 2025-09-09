@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from .serializers import *
+from ..serializers.registration_serializer import *
+from ..models import *
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework import status, viewsets, generics, permissions
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -30,10 +31,3 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     # Since anyone should be able to register, we set permission to AllowAny
     permission_classes = [permissions.AllowAny]
-class RoleViewSet(viewsets.ModelViewSet):
-    
-    queryset = Role.objects.all()
-    
-    serializer_class = RoleSerializer
-    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-    

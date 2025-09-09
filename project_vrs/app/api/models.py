@@ -35,8 +35,8 @@ class UserManager(BaseUserManager):
             except:
                 raise ValueError("Admin role must exist before creating a superuser.")
 
-
-        return self.create_user(username, email, password, **extra_fields)
+        ##Providing a defualt date_of_birth for superuser creation to avoid errors.
+        return self.create_user(username, email, password,date_of_birth="2000-01-01",**extra_fields)
 
 class User(AbstractBaseUser,PermissionsMixin):
     username = models.CharField(max_length=150, unique=True, validators=[UnicodeUsernameValidator()])
