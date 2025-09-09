@@ -4,6 +4,7 @@ from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from ..custom_permissions.admin_permission import IsAdmin
+from ..custom_permissions.user_permission import IsNormalUser
 
 class RoleViewSet(viewsets.ModelViewSet):
     """
@@ -16,4 +17,4 @@ class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin,IsNormalUser]

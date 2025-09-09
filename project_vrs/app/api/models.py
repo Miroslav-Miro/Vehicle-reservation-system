@@ -53,7 +53,7 @@ class User(AbstractBaseUser,PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_blocked = models.BooleanField(default=False)
 
-    role_id = models.ForeignKey(Role, on_delete=models.CASCADE)
+    role_id = models.ForeignKey(Role, on_delete=models.PROTECT)
 
     objects = UserManager()
 
@@ -97,12 +97,17 @@ class VehicleType(models.Model):
     vehicle_type = models.CharField(max_length=40)
 
 class Vehicle(models.Model):
-    car_plate_number = models.CharField(max_length=20, unique=True)
     amount_seats = models.CharField(max_length=10)
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     vehicle_type = models.ForeignKey(VehicleType, on_delete=models.CASCADE)
     engine_type = models.ForeignKey(EngineType, on_delete=models.CASCADE)
     models = models.ForeignKey(Model, on_delete=models.CASCADE)
+
+class PhysicalVehicle(models.Model):
+    car_plate_number = models.CharField(max_length=20, unique=True)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
 class ReservationStatus(models.Model):
     status = models.CharField(max_length=30)
@@ -113,12 +118,14 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class VehicleReservation(models.Model):
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+class PhysicalVehicleReservation(models.Model):
+    physical_vehicle = models.ForeignKey(PhysicalVehicle, on_delete=models.CASCADE)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    pickup_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    pickup_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    dropoff_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    dropoff_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
