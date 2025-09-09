@@ -1,5 +1,6 @@
 from django.urls import path, include
-from .views import *
+from .views.registration_view import RegisterView
+from .views.role_view import RoleViewSet
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
