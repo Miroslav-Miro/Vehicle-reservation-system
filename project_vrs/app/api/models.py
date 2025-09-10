@@ -5,12 +5,16 @@ from django.contrib.auth.models import (
     BaseUserManager,
 )
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Q, F
 
 
 class Role(models.Model):
     role_name = models.CharField(max_length=30)
 
-
+    def __str__(self):
+        return self.role_name
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -162,3 +166,40 @@ class PhysicalVehicleReservation(models.Model):
         max_digits=9, decimal_places=6, null=True, blank=True
     )
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        # quick checks + performance
+        constraints = [
+            models.CheckConstraint(
+                name="pvr_end_after_start",
+                check=Q(end_date__gt=F("start_date")),
+            )
+        ]
+        indexes = [
+            models.Index(fields=["physical_vehicle", "start_date"]),
+            models.Index(fields=["physical_vehicle", "end_date"]),
+        ]
+
+    def clean(self):
+        super().clean()
+
+        # Sanity
+        if self.end_date <= self.start_date:
+            raise ValidationError("End date must be after start date.")
+
+        # Overlap rule: [start, end) — allows back-to-back bookings
+        overlaps = PhysicalVehicleReservation.objects.filter(
+            physical_vehicle=self.physical_vehicle,
+            start_date__lt=self.end_date,
+            end_date__gt=self.start_date,
+        )
+        if self.pk:
+            overlaps = overlaps.exclude(pk=self.pk)
+
+        if overlaps.exists():
+            raise ValidationError("This vehicle is already reserved in the selected time window.")
+
+    def save(self, *args, **kwargs):
+        # Ensure validations run even when not using ModelForms
+        self.full_clean()
+        return super().save(*args, **kwargs)
