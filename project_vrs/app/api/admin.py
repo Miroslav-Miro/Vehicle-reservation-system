@@ -71,16 +71,15 @@ class VehicleTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
-    list_display = ("id", "models", "vehicle_type", "engine_type", "amount_seats", "price_per_day")
+    list_display = ("id", "model", "vehicle_type", "engine_type", "amount_seats", "price_per_day")
     list_filter = ("vehicle_type", "engine_type")
-    search_fields = ("models__model_name", "models__brand__brand_name")
-    ordering = ("models__brand__brand_name", "models__model_name")
-
+    search_fields = ("model__model_name", "model__brand__brand_name")
+    ordering = ("model__brand__brand_name", "model__model_name")
 
 @admin.register(PhysicalVehicle)
 class PhysicalVehicleAdmin(admin.ModelAdmin):
     list_display = ("id", "car_plate_number", "vehicle", "latitude", "longitude")
-    search_fields = ("car_plate_number", "vehicle__models__model_name")
+    search_fields = ("car_plate_number", "vehicle__model__model_name")
     ordering = ("car_plate_number",)
 
 

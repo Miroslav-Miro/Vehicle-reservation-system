@@ -29,11 +29,6 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = Vehicle
         fields = [
             "id",
-<<<<<<< Updated upstream
-            # check "car_plate_number" before use
-            # "car_plate_number",
-=======
->>>>>>> Stashed changes
             "amount_seats",
             "price_per_day",
             # names for reading
