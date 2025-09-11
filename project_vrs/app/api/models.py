@@ -123,6 +123,7 @@ class Vehicle(models.Model):
     vehicle_type = models.ForeignKey(VehicleType, on_delete=models.CASCADE)
     engine_type = models.ForeignKey(EngineType, on_delete=models.CASCADE)
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
 
 
 class PhysicalVehicle(models.Model):
@@ -137,10 +138,21 @@ class PhysicalVehicle(models.Model):
 
 
 class ReservationStatus(models.Model):
+    """Represents the status of a reservation.
+
+    :param models: The Django models module.
+    :type models: module
+    """
     status = models.CharField(max_length=30)
 
 
 class Reservation(models.Model):
+    """
+    Represents a reservation made by a user.
+
+    :param models: The Django models module.
+    :type models: module
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.ForeignKey(ReservationStatus, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -149,6 +161,14 @@ class Reservation(models.Model):
 
 
 class PhysicalVehicleReservation(models.Model):
+    """
+    Represents the reservation of a specific physical vehicle
+    in a particulat reservation.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     physical_vehicle = models.ForeignKey(PhysicalVehicle, on_delete=models.CASCADE)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
     start_date = models.DateTimeField()
