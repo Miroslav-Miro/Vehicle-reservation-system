@@ -12,6 +12,20 @@ services:
       - .env
     depends_on:
       - db
+
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.frontend
+    command: ng serve --host 0.0.0.0
+    volumes:
+      # - ./app:/app
+      - ./app/frontend:/app/frontend
+      - /app/frontend/node_modules
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
   db:
     image: postgres:15
     environment:
