@@ -125,17 +125,14 @@ class Vehicle(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
 
+class Location(models.Model):
+    location_name = models.CharField(max_length=100)
+    address = models.CharField(max_length=255)
 
 class PhysicalVehicle(models.Model):
     car_plate_number = models.CharField(max_length=20, unique=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
-    latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-
+    location = models.ForeignKey(Location, on_delete=models.PROTECT)
 
 class ReservationStatus(models.Model):
     """Represents the status of a reservation.
@@ -156,9 +153,12 @@ class Reservation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.ForeignKey(ReservationStatus, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    pickup_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='pickup_location')
+    dropoff_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='dropoff_location')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
 class PhysicalVehicleReservation(models.Model):
     """
@@ -171,55 +171,3 @@ class PhysicalVehicleReservation(models.Model):
 
     physical_vehicle = models.ForeignKey(PhysicalVehicle, on_delete=models.CASCADE)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    pickup_latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    pickup_longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    dropoff_latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    dropoff_longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    class Meta:
-        # quick checks + performance
-        constraints = [
-            models.CheckConstraint(
-                name="pvr_end_after_start",
-                check=Q(end_date__gt=F("start_date")),
-            )
-        ]
-        indexes = [
-            models.Index(fields=["physical_vehicle", "start_date"]),
-            models.Index(fields=["physical_vehicle", "end_date"]),
-        ]
-
-    def clean(self):
-        super().clean()
-
-        # Sanity
-        if self.end_date <= self.start_date:
-            raise ValidationError("End date must be after start date.")
-
-        # Overlap rule: [start, end) — allows back-to-back bookings
-        overlaps = PhysicalVehicleReservation.objects.filter(
-            physical_vehicle=self.physical_vehicle,
-            start_date__lt=self.end_date,
-            end_date__gt=self.start_date,
-        )
-        if self.pk:
-            overlaps = overlaps.exclude(pk=self.pk)
-
-        if overlaps.exists():
-            raise ValidationError("This vehicle is already reserved in the selected time window.")
-
-    def save(self, *args, **kwargs):
-        # Ensure validations run even when not using ModelForms
-        self.full_clean()
-        return super().save(*args, **kwargs)

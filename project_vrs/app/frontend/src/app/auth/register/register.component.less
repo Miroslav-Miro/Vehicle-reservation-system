@@ -1,0 +1,322 @@
+/* Page background + centering (same as login .main) */
+.auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(90deg, #C7C5F4, #776BCC);
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* The “screen” card (same look as .login) */
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width:500px;   /* a bit wider for more fields */
+  min-height: 500px;
+  height: auto;
+  background: linear-gradient(90deg, #5D54A4, #7C78B8);
+  box-shadow: 0 0 24px #5C5696;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+/* Inner form area (same spacing logic as login) */
+.auth-card form {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 20px;
+  padding-top: 120px;  /* space for the floating title */
+  color: #fff;
+}
+
+/* Title: centered, outlined, floating at the top (same as login h2) */
+.auth-card h2 {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  letter-spacing: .5px;
+  font-size: 2rem;
+  color: #4F518C;
+  text-shadow:
+    -1px -1px 0 white,
+     1px -1px 0 white,
+    -1px  1px 0 white,
+     1px  1px 0 white;
+}
+
+/* Form groups */
+.form-group {
+  position: relative;
+  padding: 10px 0;
+}
+
+/* Inputs: same “stick out” style as login */
+.form-group input {
+  width: 100%;
+  height: 52px;
+  box-sizing: border-box;
+
+  background-color: #4F518C;
+  border: 2px solid #D1D1D4;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+
+  padding-left: 48px;  /* room for icon */
+  padding-right: 14px;
+  font-weight: 700;
+  color: #fff;
+  outline: none;
+
+  transition: border-color .2s ease, box-shadow .2s ease, transform .06s ease;
+}
+
+.form-group input::placeholder {
+  color: #E7E6FF;
+  opacity: .9;
+}
+
+.form-group input:hover,
+.form-group input:focus {
+  border-color: #fff;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+/* Submit button: white pill (same as login) */
+button[type="submit"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 10px;
+  height: 52px;
+  padding: 16px 20px;
+  background: #fff;
+  color: #4C489D;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  border: 1px solid #D4D3E8;
+  border-radius: 26px;
+  box-shadow: 0 2px 2px #5C5696;
+  cursor: pointer;
+  transition: border-color .2s ease-in-out, transform .06s ease-in-out;
+}
+
+button[type="submit"]:hover,
+button[type="submit"]:focus {
+  border-color: #6A679E;
+}
+
+button[type="submit"]:active {
+  transform: translateY(1px);
+}
+
+/* Messages (same style language as login) */
+.error, .success {
+  margin-top: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.error {
+  color: #ff2222;
+  background-color: #6a679ee2;
+}
+
+.success {
+  color: #22ff88;
+  background-color: #2e6135e2;
+}
+
+/* “Already have an account?” link (same vibe) */
+.switch-link {
+  text-align: center;
+  margin: 16px 0 0;
+}
+.switch-link a {
+  color: #fff;
+  background-color: #6A679E;
+  border-radius: 28px;
+  padding: 5px;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+/* Decorative background shapes (same as login blobs/bars) */
+.auth-card::before,
+.auth-card::after {
+  content: "";
+  position: absolute;
+  transform: rotate(45deg);
+  z-index: 0;
+}
+
+/* Big white shape */
+.auth-card::before {
+  height: 520px;
+  width: 520px;
+  background: #FFF;
+  top: -50px;
+  right: 120px;
+  border-radius: 0 72px 0 0;
+}
+
+/* Tall gradient bar on the right */
+.auth-card::after {
+  height: 540px;
+  width: 190px;
+  background: linear-gradient(270deg, #5D54A4, #6A679E);
+  top: -24px;
+  right: 0;
+  border-radius: 32px;
+}
+
+/* Two more shapes using the form’s pseudo-elements */
+.auth-card form::before,
+.auth-card form::after {
+  content: "";
+  position: absolute;
+  transform: rotate(45deg);
+  z-index: 0;
+}
+
+.auth-card form::before {
+  height: 220px;
+  width: 220px;
+  background: #6C63AC;
+  top: -172px;
+  right: 0;
+  border-radius: 32px;
+}
+
+.auth-card form::after {
+  height: 400px;
+  width: 200px;
+  background: #7E7BB9;
+  top: 420px;
+  right: 50px;
+  border-radius: 60px;
+}
+
+/* Ensure the form’s real content sits above shapes */
+.auth-card form > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* === Inline SVG icons (attribute selectors; same icon style as login) === */
+/* All icons: size/pos */
+.form-group input {
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 22px 22px;
+}
+
+/* Username */
+.form-group input[name="username"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3e%3ccircle cx='12' cy='7' r='4'/%3e%3c/svg%3e");
+}
+
+/* Email */
+.form-group input[name="email"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M4 4h16v16H4z' fill='none'/%3e%3cpath d='M22 6l-10 7L2 6'/%3e%3c/svg%3e");
+}
+
+/* Password */
+.form-group input[name="password"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='11' width='18' height='11' rx='2'/%3e%3cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3e%3c/svg%3e");
+}
+
+/* Confirm Password (lock with check) */
+.form-group input[name="confirmPassword"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='11' width='18' height='11' rx='2'/%3e%3cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3e%3cpath d='M9 17l2 2 4-4'/%3e%3c/svg%3e");
+}
+
+/* First name */
+.form-group input[name="firstName"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='12' cy='7' r='4'/%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3e%3c/svg%3e");
+}
+
+/* Last name (same user icon to keep consistent) */
+.form-group input[name="lastName"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='12' cy='7' r='4'/%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3e%3c/svg%3e");
+}
+
+/* Address (map pin / home) */
+.form-group input[name="address"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3e%3cpath d='M9 22V12h6v10'/%3e%3c/svg%3e");
+}
+
+/* Date of birth (calendar) */
+.form-group input[name="dob"],
+.form-group input[type="date"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3e%3cline x1='16' y1='2' x2='16' y2='6'/%3e%3cline x1='8' y1='2' x2='8' y2='6'/%3e%3cline x1='3' y1='10' x2='21' y2='10'/%3e%3c/svg%3e");
+}
+
+/* Phone */
+.form-group input[name="phone"],
+.form-group input[name="phone_number"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.63 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.15a2 2 0 0 1 2.11-.45c.83.3 1.7.51 2.6.63A2 2 0 0 1 22 16.92z'/%3e%3c/svg%3e");
+}
+
+/* Switch link looks separate from the card’s overflow area; keep it outside the card if needed */
+
+/* Responsive tweaks (match login behavior) */
+@media (max-width: 480px) {
+  .auth-card {
+    max-width: 90%;
+    min-height: auto;
+    border-radius: 8px;
+  }
+
+  .auth-card h2 {
+    font-size: 1.5rem;
+    top: 20px;
+  }
+
+  .form-group input,
+  button[type="submit"] {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  /* scale down decorative shapes */
+  .auth-card::before {
+    height: 320px;
+    width: 320px;
+    right: 60px;
+  }
+
+  .auth-card::after {
+    height: 340px;
+    width: 120px;
+  }
+
+  .auth-card form::before {
+    height: 140px;
+    width: 140px;
+  }
+
+  .auth-card form::after {
+    height: 240px;
+    width: 140px;
+  }
+}
+
+/* Optional: basic autofill color alignment (no icon re-apply to keep it concise) */
+.form-group input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #4F518C inset !important;
+  -webkit-text-fill-color: #fff !important;
+  border-radius: 14px;
+  transition: background-color 5000s ease-in-out 0s;
+}

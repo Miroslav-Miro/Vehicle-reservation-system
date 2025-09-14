@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = 'http://localhost:8000/api/auth';
   private role: string | null = null;
+
+  private _isAuthed$ = new BehaviorSubject<boolean>(!!localStorage.getItem('access'));
+  isAuthed$ = this._isAuthed$.asObservable()
 
   constructor(private http: HttpClient) {}
 
@@ -16,15 +20,22 @@ export class AuthService {
         localStorage.setItem('refresh', res.refresh);
         localStorage.setItem('role', res.role);
         this.role = res.role;
+
+        this._isAuthed$.next(true);
       })
     );
   }
+  register(data: any) {
+    return this.http.post(`${this.apiUrl}/register/`, data);
+  }
+
 
   logout() {
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
     localStorage.removeItem('role');
     this.role = null;
+    this._isAuthed$.next(false);
   }
 
   getRole(): string | null {
