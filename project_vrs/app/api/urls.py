@@ -9,6 +9,8 @@ from api.views.vehicle_view import (
     VehicleTypeViewSet,
     ModelViewSet,
 )
+from .views.user_view import UserProfileViewSet, AdminUserProfilesViewSet
+from .views.reservation_view import ReservationViewSet
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -24,8 +26,11 @@ router.register(r"engine-types", EngineTypeViewSet, basename="engine-type")
 router.register(r"vehicle-types", VehicleTypeViewSet, basename="vehicle-type")
 router.register(r"models", ModelViewSet, basename="model")
 
+router.register(r"user_management",AdminUserProfilesViewSet,basename="user_management")
+router.register(r"user_reservations",ReservationViewSet,basename="user_reservations")
 
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/register/", RegisterView.as_view(), name="register"),
+    path("user_profile/", UserProfileViewSet.as_view(), name="user_profile"),
 ]

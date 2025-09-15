@@ -11,6 +11,7 @@ from ..serializers.vehicle_serializer import (
 )
 from ..custom_permissions.mixed_role_permissions import RoleRequired
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import IsAuthenticated
 
 
 # VvehicleView
@@ -193,5 +194,7 @@ class PhysicalVehicleViewSet(viewsets.ModelViewSet):
         Return a list of permission instances depending on the HTTP method.
         """
         if self.request.method in ("GET", "HEAD", "OPTIONS"):
-            return [RoleRequired("user", "manager", "admin")]
-        return [RoleRequired("manager", "admin")]
+            permission_classes = [RoleRequired("user", "manager", "admin")]
+        else:
+            permission_classes = [RoleRequired("manager", "admin")]
+        return permission_classes
