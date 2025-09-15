@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
+import { throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -27,6 +28,16 @@ export class AuthService {
   }
   register(data: any) {
     return this.http.post(`${this.apiUrl}/register/`, data);
+  }
+
+  refreshToken() {
+    const refresh = localStorage.getItem('refresh');
+    if (!refresh) return throwError(() => new Error('No refresh token'));
+    return this.http.post<any>('http://localhost:8000/api/auth/refresh/', { refresh }).pipe(
+      tap(res => {
+        if (res.access) localStorage.setItem('access', res.access);
+      })
+    );
   }
 
 

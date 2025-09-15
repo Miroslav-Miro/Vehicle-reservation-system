@@ -8,14 +8,15 @@
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';   // 👈 add this
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
+import { jwtInterceptor } from './app/auth/jwt.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient()  // 👈 enables HttpClient for DI
+    provideHttpClient(withInterceptors([jwtInterceptor]))
   ]
 }).catch(err => console.error(err));
 
