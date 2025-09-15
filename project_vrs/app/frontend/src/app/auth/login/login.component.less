@@ -1,0 +1,311 @@
+/* Page background + centering */
+.main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  background: linear-gradient(90deg, #C7C5F4, #776BCC);
+  font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+//   font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* The “screen” card */
+.login {
+  position: relative;
+  width: 100%;
+  max-width: 360px;       /* keeps design tight on desktop */
+  min-height: 500px;      /* allow growth */
+  height: auto;           /* no fixed height */
+  background: linear-gradient(90deg, #5D54A4, #7C78B8);
+  box-shadow: 0 0 24px #5C5696;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Inner form area */
+.login form {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 20px;
+  padding-top: 120px; /* leaves space for title */
+  color: #fff;
+}
+
+/* Title */
+.login h2 {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  letter-spacing: .5px;
+  font-size: 2rem;
+  color: #4F518C;
+  text-shadow:
+    -1px -1px 0 white,
+     1px -1px 0 white,
+    -1px  1px 0 white,
+     1px  1px 0 white;
+}
+
+/* Form groups */
+.form-group {
+  position: relative;
+  padding: 10px 0;
+}
+
+/* Inputs */
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  width: 100%;
+  height: 52px;
+  box-sizing: border-box;
+
+  background-color: #4F518C;
+  border: 2px solid #D1D1D4;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+
+  padding-left: 48px; /* room for icon */
+  padding-right: 14px;
+  font-weight: 700;
+  color: #3e3d49;
+  outline: none;
+
+  transition: border-color .2s ease, box-shadow .2s ease, transform .06s ease;
+}
+
+.switch-link {
+  text-align: center;
+  margin: 16px 0 0;
+}
+.switch-link a {
+  color: #fff;
+  background-color: #6A679E;
+  border-radius: 28px;
+  padding: 5px;
+  font-size: 14px;
+  text-decoration: underline;
+}
+
+.form-group input[type="text"]:hover,
+.form-group input[type="password"]:hover,
+.form-group input[type="text"]:focus,
+.form-group input[type="password"]:focus {
+  border-color: #fff;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+.form-group input::placeholder {
+  color: #E7E6FF;
+  opacity: .9;
+}
+
+/* Inline SVG icons */
+.form-group input[type="text"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3e%3ccircle cx='12' cy='7' r='4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 22px 22px;
+  color: rgb(255, 255, 255);
+}
+
+.form-group input[type="password"] {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E7E6FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='11' width='18' height='11' rx='2'/%3e%3cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 22px 22px;
+  color:white;
+}
+
+/* Submit button: white pill */
+button[type="submit"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 30px;
+  height: 52px;
+  padding: 16px 20px;
+  background: #fff;
+  color: #4C489D;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  border: 1px solid #D4D3E8;
+  border-radius: 26px;
+  box-shadow: 0 2px 2px #5C5696;
+  cursor: pointer;
+  transition: border-color .2s ease-in-out, transform .06s ease-in-out;
+}
+
+button[type="submit"]:hover,
+button[type="submit"]:focus {
+  border-color: #6A679E;
+}
+
+button[type="submit"]:active {
+  transform: translateY(1px);
+}
+
+/* Error message */
+.error {
+  margin-top: 16px;
+  color: #ff2222;
+  padding: 10px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #6a679ee2;
+  border-radius: 26px;
+}
+
+/* Decorative background shapes */
+.login::before,
+.login::after {
+  content: "";
+  position: absolute;
+  transform: rotate(45deg);
+  z-index: 0;
+}
+
+.login::before {
+  height: 520px;
+  width: 520px;
+  background: #FFF;
+  top: -50px;
+  right: 120px;
+  border-radius: 0 72px 0 0;
+}
+
+.login::after {
+  height: 540px;
+  width: 190px;
+  background: linear-gradient(270deg, #5D54A4, #6A679E);
+  top: -24px;
+  right: 0;
+  border-radius: 32px;
+}
+
+.login form::before,
+.login form::after {
+  content: "";
+  position: absolute;
+  transform: rotate(45deg);
+  z-index: 0;
+}
+
+.login form::before {
+  height: 220px;
+  width: 220px;
+  background: #6C63AC;
+  top: -172px;
+  right: 0;
+  border-radius: 32px;
+}
+
+.login form::after {
+  height: 400px;
+  width: 200px;
+  background: #7E7BB9;
+  top: 420px;
+  right: 50px;
+  border-radius: 60px;
+}
+
+/* Ensure the form’s content sits above shapes */
+.login form > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* === Responsive tweaks === */
+@media (max-width: 480px) {
+  .login {
+    max-width: 90%;
+    min-height: auto;
+    border-radius: 8px;
+  }
+
+  .login h2 {
+    font-size: 1.5rem;
+    top: 20px;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="password"],
+  button[type="submit"] {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  /* scale down background shapes */
+  .login::before {
+    height: 320px;
+    width: 320px;
+    right: 60px;
+  }
+
+  .login::after {
+    height: 340px;
+    width: 120px;
+  }
+
+  .login form::before {
+    height: 140px;
+    width: 140px;
+  }
+
+  .login form::after {
+    height: 240px;
+    width: 140px;
+  }
+}
+
+.form-group input[type="text"]:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #4F518C inset !important;
+  -webkit-text-fill-color: #fff !important;
+  border: 2px solid #D1D1D4;
+  border-radius: 14px;
+
+  /* put the icon back */
+  background-image: url("data:image/svg+xml;...user-icon...");
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 22px 22px;
+  padding-left: 48px;
+}
+
+.form-group input[type="text"]:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #4F518C inset !important;
+  -webkit-text-fill-color: #fff !important;
+  border: 2px solid #D1D1D4;
+  border-radius: 14px;
+
+  /* put the icon back */
+  background-image: url("data:image/svg+xml;...user-icon...");
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 22px 22px;
+  padding-left: 48px;
+}
+
+.form-group input[type="password"]:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #4F518C inset !important;
+  -webkit-text-fill-color: #fff !important;
+  border: 2px solid #D1D1D4;
+  border-radius: 14px;
+
+  /* put the icon back */
+  background-image: url("data:image/svg+xml;...lock-icon...");
+  background-repeat: no-repeat;
+  background-position: 16px center;
+  background-size: 22px 22px;
+  padding-left: 48px;
+}
+
+

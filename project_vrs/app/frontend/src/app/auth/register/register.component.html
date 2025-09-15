@@ -1,0 +1,53 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2>Sign up</h2>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <input type="text" name="username" [(ngModel)]="username" placeholder="Username" required>
+      </div>
+
+      <div class="form-group">
+        <input type="email" name="email" [(ngModel)]="email" placeholder="Email" required>
+      </div>
+
+      <div class="form-group">
+        <input type="password" name="password" [(ngModel)]="password" placeholder="Password" required>
+      </div>
+
+      <div class="form-group">
+        <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" placeholder="Confirm Password" required>
+      </div>
+
+      <div class="form-group">
+        <input type="text" name="firstName" [(ngModel)]="first_name" placeholder="First name">
+      </div>
+
+      <div class="form-group">
+        <input type="text" name="lastName" [(ngModel)]="last_name" placeholder="Last name">
+      </div>
+
+      <div class="form-group">
+        <input type="text" name="address" [(ngModel)]="address" placeholder="Address">
+      </div>
+
+      <div class="form-group">
+        <input type="date" name="dob" [(ngModel)]="date_of_birth" placeholder="Date of birth">
+      </div>
+
+      <div class="form-group">
+        <input type="text" name="phone" [(ngModel)]="phone_number" placeholder="Phone number">
+      </div>
+
+      <button type="submit">Sign up</button>
+
+      <p *ngIf="error" class="error">{{ error }}</p>
+      <p *ngIf="success" class="success">{{ success }}</p>
+      <div class="switch-link">
+        <a routerLink="/auth/login">Already have an account? Login</a>
+      </div>
+    </form>
+
+    
+  </div>
+</div>

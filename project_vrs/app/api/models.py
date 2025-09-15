@@ -11,12 +11,53 @@ from django.db.models import Q, F
 
 
 class Role(models.Model):
+    """
+    The class represents the role of the user -
+    admin, manager or user
+
+    :param models: The Django models module.
+    :type models: module
+    :return: the role name
+    :rtype: str
+    """
+
     role_name = models.CharField(max_length=30)
 
     def __str__(self):
         return self.role_name
 class UserManager(BaseUserManager):
+    """
+    Custom manager for the User model, extending Django's BaseUserManager.
+
+    This class provides helper methods to create regular users and superusers.
+    It enforces required fields (username, email, password) and ensures proper
+    defaults for superusers. It also normalizes email addresses before saving.
+
+    create_superuser(username, email, password=None, **extra_fields):
+
+
+    :param BaseUserManager: BseUserManager
+    :type BaseUserManager: class
+    """
+
     def create_user(self, username, email, password=None, **extra_fields):
+        """
+        Creates and saves a regular user with the given username, email,
+        password, and any additional fields.
+
+        :param username: username of the user
+        :type username: str
+        :param email: email of the user
+        :type email: str
+        :param password: password of the user, defaults to None
+        :type password: string, optional
+        :raises ValueError: If email is not set
+        :raises ValueError: If username is not set
+        :raises ValueError: Is password is not set
+        :return: the user object
+        :rtype: User instance
+        """
+
         if not email:
             raise ValueError("The Email field must be set")
         if not username:
@@ -33,6 +74,22 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
+        """
+        Creates and saves a superuser with the given username, email,
+        password, and any additional fields. Ensures the user is marked
+        as staff, active, and superuser, and assigns the "admin" role if it exists.
+
+        :param username: username of the user
+        :type username: str
+        :param email: email of the user
+        :type email: str
+        :param password: password of the user, defaults to None
+        :type password: string, optional
+        :raises ValueError: If admin role doesn't exist in the db
+        :return: the user object
+        :rtype: User instance
+        """
+
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -51,6 +108,20 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """
+    Custom user model that replaces Django's default User.
+
+    This model is built on top of AbstractBaseUser and PermissionsMixin
+    to provide full control over authentication fields and permissions.
+    It includes common user details, role-based access, and support for
+    Django's authentication system.
+
+    :param AbstractBaseUser: AbstractBaseUser
+    :type AbstractBaseUser: class
+    :param PermissionsMixin: PermissionsMixin
+    :type PermissionsMixin: class
+    """
+
     username = models.CharField(
         max_length=150, unique=True, validators=[UnicodeUsernameValidator()]
     )
@@ -95,7 +166,7 @@ class LoginEvent(models.Model):
 
 class Brand(models.Model):
     """
-    Represents the brand of the vehicle.
+    Represents the brand of the vehicle - Mercedes, BMW, etc.
 
     :param models: The Django models module.
     :type models: module
@@ -103,103 +174,131 @@ class Brand(models.Model):
 
     brand_name = models.CharField(max_length=30)
 
+    def __str__(self):
+        return self.brand_name
+
 
 class Model(models.Model):
+    """
+    Represents the brand of the vehicle.
+    For example Golf 5 for VW or Avensis for Toyota.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     model_name = models.CharField(max_length=50)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.model_name
+
 
 class EngineType(models.Model):
+    """
+    Represents the engine type of the vehicle.
+    For example gasoline or diesel.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     engine_type = models.CharField(max_length=40)
+
+    def __str__(self):
+        return self.engine_type
 
 
 class VehicleType(models.Model):
+    """
+    Represents the vehicle type
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     vehicle_type = models.CharField(max_length=40)
+
+    def __str__(self):
+        return self.vehicle_type
 
 
 class Vehicle(models.Model):
+    """
+    Represents a vehicle as a conceptual model.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     amount_seats = models.CharField(max_length=10)
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     vehicle_type = models.ForeignKey(VehicleType, on_delete=models.CASCADE)
     engine_type = models.ForeignKey(EngineType, on_delete=models.CASCADE)
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
 
+class Location(models.Model):
+    """
+    Represents a location of a vehicle or office.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
+    ##a city or village
+    location_name = models.CharField(max_length=100)
+    address = models.CharField(max_length=255)
 
 class PhysicalVehicle(models.Model):
+    """
+    Represents a vehicle as a physical instance,
+    each physcal vehicle has a conceptual model (Vehicle).
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     car_plate_number = models.CharField(max_length=20, unique=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
-    latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-
+    location = models.ForeignKey(Location, on_delete=models.PROTECT)
 
 class ReservationStatus(models.Model):
+    """
+    Represents the status of a reservation.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     status = models.CharField(max_length=30)
 
 
 class Reservation(models.Model):
+    """
+    Represents a reservation made by a user.
+
+    :param models: The Django models module.
+    :type models: module
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.ForeignKey(ReservationStatus, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    pickup_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='pickup_location')
+    dropoff_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='dropoff_location')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
 class PhysicalVehicleReservation(models.Model):
+    """
+    Represents the reservation of a specific physical vehicle
+    in a particular reservation.
+
+    :param models: The Django models module.
+    :type models: module
+    """
+
     physical_vehicle = models.ForeignKey(PhysicalVehicle, on_delete=models.CASCADE)
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    pickup_latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    pickup_longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    dropoff_latitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    dropoff_longitude = models.DecimalField(
-        max_digits=9, decimal_places=6, null=True, blank=True
-    )
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    class Meta:
-        # quick checks + performance
-        constraints = [
-            models.CheckConstraint(
-                name="pvr_end_after_start",
-                check=Q(end_date__gt=F("start_date")),
-            )
-        ]
-        indexes = [
-            models.Index(fields=["physical_vehicle", "start_date"]),
-            models.Index(fields=["physical_vehicle", "end_date"]),
-        ]
-
-    def clean(self):
-        super().clean()
-
-        # Sanity
-        if self.end_date <= self.start_date:
-            raise ValidationError("End date must be after start date.")
-
-        # Overlap rule: [start, end) — allows back-to-back bookings
-        overlaps = PhysicalVehicleReservation.objects.filter(
-            physical_vehicle=self.physical_vehicle,
-            start_date__lt=self.end_date,
-            end_date__gt=self.start_date,
-        )
-        if self.pk:
-            overlaps = overlaps.exclude(pk=self.pk)
-
-        if overlaps.exists():
-            raise ValidationError("This vehicle is already reserved in the selected time window.")
-
-    def save(self, *args, **kwargs):
-        # Ensure validations run even when not using ModelForms
-        self.full_clean()
-        return super().save(*args, **kwargs)

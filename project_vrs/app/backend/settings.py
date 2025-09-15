@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,6 +72,14 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),   # short
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),     # long session window
+    "ROTATE_REFRESH_TOKENS": True,                    # get a new refresh each time
+    "BLACKLIST_AFTER_ROTATION": True,                 # old refresh becomes invalid
+    "UPDATE_LAST_LOGIN": True,
 }
 
 SWAGGER_SETTINGS = {
@@ -141,6 +150,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = "api.User"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+]
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200'
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

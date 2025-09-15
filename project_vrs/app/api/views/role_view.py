@@ -17,4 +17,4 @@ class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-    permission_classes = [IsAdmin,IsNormalUser]
+    permission_classes = [IsAdmin]
