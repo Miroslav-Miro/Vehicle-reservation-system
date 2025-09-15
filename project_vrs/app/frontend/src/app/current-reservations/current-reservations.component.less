@@ -1,146 +1,170 @@
 /* Palette */
 @dark: #2C2A4A;
-@mid:  #4F518C;
-@ink:  #ffffff;
+@mid: #4F518C;
+@ink: #ffffff;
 @muted: #bfc1d6;
 @danger: #ff6b6b;
 
 .reservations {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
-  padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    padding: 1.5rem;
 }
 
 .card {
-  background: @dark;
-  color: @ink;
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.35);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  &__header {
+    background: @dark;
+    color: @ink;
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
+    overflow: hidden;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: .9rem 1.1rem;
-    background: linear-gradient(180deg, fade(@mid,70%), fade(@mid,40%));
-    border-bottom: 1px solid fade(@ink,10%);
+    flex-direction: column;
 
-    h2 {
-      margin: 0;
-      font-size: 1.1rem;
-      letter-spacing: .5px;
-    }
-  }
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .9rem 1.1rem;
+        background: linear-gradient(180deg, fade(@mid, 70%), fade(@mid, 40%));
+        border-bottom: 1px solid fade(@ink, 10%);
 
-  &__body {
-    padding: 1rem 1.1rem 0;
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .75rem;
-      margin-bottom: .75rem;
-
-      .label { color: @muted; font-size: .8rem; }
-      .value { font-weight: 600; }
+        h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: .5px;
+        }
     }
 
-    .locations {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .75rem;
-      margin: .6rem 0 1rem;
+    &__body {
+        padding: 1rem 1.1rem 0;
 
-      .loc {
-        background: fade(@ink, 3%);
-        border: 1px solid fade(@ink, 8%);
-        border-radius: 10px;
-        padding: .75rem;
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin-bottom: .75rem;
 
-        &__title { color: @muted; font-size: .8rem; margin-bottom: .25rem; }
-        &__name { font-weight: 600; }
-        &__addr { color: @muted; font-size: .85rem; line-height: 1.2; }
-      }
-    }
+            .label {
+                color: @muted;
+                font-size: .8rem;
+            }
 
-    .vehicles {
-      display: grid;
-      gap: .6rem;
-      margin-bottom: 1rem;
-
-      .veh {
-        border: 1px solid fade(@ink, 8%);
-        background: fade(@ink, 2%);
-        border-radius: 10px;
-        padding: .6rem .75rem;
-
-        &__line {
-          display: grid;
-          grid-template-columns: 110px 1fr;
-          gap: .5rem;
-          margin: .15rem 0;
+            .value {
+                font-weight: 600;
+            }
         }
 
-        &__label { color: @muted; font-size: .8rem; }
-        &__value { font-weight: 600; }
-      }
-    }
-  }
+        .locations {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin: .6rem 0 1rem;
 
-  &__footer {
-    display: flex;
-    gap: .6rem;
-    padding: .9rem 1.1rem 1.1rem;
-    border-top: 1px solid fade(@ink,10%);
-  }
+            .loc {
+                background: fade(@ink, 3%);
+                border: 1px solid fade(@ink, 8%);
+                border-radius: 10px;
+                padding: .75rem;
+
+                &__title {
+                    color: @muted;
+                    font-size: .8rem;
+                    margin-bottom: .25rem;
+                }
+
+                &__name {
+                    font-weight: 600;
+                }
+
+                &__addr {
+                    color: @muted;
+                    font-size: .85rem;
+                    line-height: 1.2;
+                }
+            }
+        }
+
+        .vehicles {
+            display: grid;
+            gap: .6rem;
+            margin-bottom: 1rem;
+
+            .veh {
+                border: 1px solid fade(@ink, 8%);
+                background: fade(@ink, 2%);
+                border-radius: 10px;
+                padding: .6rem .75rem;
+
+                &__line {
+                    display: grid;
+                    grid-template-columns: 110px 1fr;
+                    gap: .5rem;
+                    margin: .15rem 0;
+                }
+
+                &__label {
+                    color: @muted;
+                    font-size: .8rem;
+                }
+
+                &__value {
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+
+    &__footer {
+        display: flex;
+        gap: .6rem;
+        padding: .9rem 1.1rem 1.1rem;
+        border-top: 1px solid fade(@ink, 10%);
+    }
 }
 
 .chip {
-  padding: .25rem .6rem;
-  border-radius: 999px;
-  font-size: .75rem;
-  letter-spacing: .4px;
-  border: 1px solid fade(@ink,20%);
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    letter-spacing: .4px;
+    border: 1px solid fade(@ink, 20%);
 
-  &--active {
-    background: fade(@mid,35%);
-    color: @ink;
-  }
+    &--active {
+        background: fade(@mid, 35%);
+        color: @ink;
+    }
 }
 
 .btn {
-  padding: .55rem .9rem;
-  border-radius: 10px;
-  border: 1px solid fade(@ink,20%);
-  background: transparent;
-  color: @ink;
-  cursor: pointer;
-  transition: .2s ease;
-
-  &:hover {
-    background: fade(@ink,10%);
-  }
-
-  &--danger {
-    border-color: fade(@danger,60%);
-    color: @danger;
+    padding: .55rem .9rem;
+    border-radius: 10px;
+    border: 1px solid fade(@ink, 20%);
+    background: transparent;
+    color: @ink;
+    cursor: pointer;
+    transition: .2s ease;
 
     &:hover {
-      background: fade(@danger,12%);
+        background: fade(@ink, 10%);
     }
-  }
 
-  &--ghost {
-    /* default ghost */
-  }
+    &--danger {
+        border-color: fade(@danger, 60%);
+        color: @danger;
+
+        &:hover {
+            background: fade(@danger, 12%);
+        }
+    }
+
+    &--ghost {
+        /* default ghost */
+    }
 }
 
 .empty {
-  color: @muted;
-  text-align: center;
-  padding: 2rem;
+    color: @muted;
+    text-align: center;
+    padding: 2rem;
 }

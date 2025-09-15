@@ -3,9 +3,19 @@ from rest_framework import serializers
 from ..models import User
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """Serializer for normal users (limited fields)."""
+    """
+    Serializer for normal users (limited fields).
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
 
     class Meta:
+        """
+        All fields that a user can change
+        from profile settings
+        """
+
         model = User
         fields = [
             "first_name",
@@ -17,7 +27,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class AdminUserProfilesSerializer(serializers.ModelSerializer):
-    """Serializer for admins (full control)."""
+    """
+    Serializer for admins (full control).
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
 
     class Meta:
         model = User

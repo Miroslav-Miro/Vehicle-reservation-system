@@ -11,8 +11,8 @@ class UserProfileViewSet(generics.RetrieveUpdateAPIView):
     ViewSet for managing users. Only authenticated users can access this view.
     This view is used to retrieve and update the current logged-in user's profile.
 
-    :param viewsets: _description_
-    :type viewsets: _type_
+    :param viewsets: Django REST framework viewsets module.
+    :type viewsets: module
     """
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
