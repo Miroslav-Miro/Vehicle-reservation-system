@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from ..custom_permissions.admin_permission import IsAdmin
 from ..custom_permissions.user_permission import IsNormalUser
 
+
 class RoleViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing roles. Only an admin user can access this view.

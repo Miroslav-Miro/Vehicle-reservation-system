@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
 )
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, F
@@ -224,6 +225,9 @@ class VehicleType(models.Model):
 
 
 class Vehicle(models.Model):
+    amount_seats = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(9)]
+    )
     """
     Represents a vehicle as a conceptual model.
 
@@ -231,7 +235,6 @@ class Vehicle(models.Model):
     :type models: module
     """
 
-    amount_seats = models.CharField(max_length=10)
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     vehicle_type = models.ForeignKey(VehicleType, on_delete=models.CASCADE)
     engine_type = models.ForeignKey(EngineType, on_delete=models.CASCADE)
