@@ -1,4 +1,4 @@
 venv
 __pycache__/
-project_vrs/app/api/migrations/0*.py
+# project_vrs/app/api/migrations/0*.py
 project_vrs/.env
