@@ -262,15 +262,11 @@ class PhysicalVehicleSerializer(serializers.ModelSerializer):
             "vehicle_id",
             "vehicle_model_name",
             "vehicle_brand_name",
-            "latitude",
-            "longitude",
         ]
         extra_kwargs = {
             "car_plate_number": {
                 "help_text": "Unique registration plate, e.g., 'PB1234KT'"
-            },
-            "latitude": {"help_text": "Optional last known latitude."},
-            "longitude": {"help_text": "Optional last known longitude."},
+            }
         }
 
     def validate_car_plate_number(self, value: str) -> str:
