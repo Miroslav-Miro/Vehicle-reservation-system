@@ -8,7 +8,6 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q, F
 
 
 class Role(models.Model):
@@ -26,6 +25,8 @@ class Role(models.Model):
 
     def __str__(self):
         return self.role_name
+
+
 class UserManager(BaseUserManager):
     """
     Custom manager for the User model, extending Django's BaseUserManager.
@@ -241,6 +242,7 @@ class Vehicle(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
 
+
 class Location(models.Model):
     """
     Represents a location of a vehicle or office.
@@ -252,6 +254,7 @@ class Location(models.Model):
     ##a city or village
     location_name = models.CharField(max_length=100)
     address = models.CharField(max_length=255)
+
 
 class PhysicalVehicle(models.Model):
     """
@@ -265,6 +268,7 @@ class PhysicalVehicle(models.Model):
     car_plate_number = models.CharField(max_length=20, unique=True)
     vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT)
+
 
 class ReservationStatus(models.Model):
     """
@@ -284,15 +288,21 @@ class Reservation(models.Model):
     :param models: The Django models module.
     :type models: module
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.ForeignKey(ReservationStatus, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    pickup_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='pickup_location')
-    dropoff_location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='dropoff_location')
+    pickup_location = models.ForeignKey(
+        Location, on_delete=models.PROTECT, related_name="pickup_location"
+    )
+    dropoff_location = models.ForeignKey(
+        Location, on_delete=models.PROTECT, related_name="dropoff_location"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
 class PhysicalVehicleReservation(models.Model):
     """

@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions
 from rest_framework.filters import SearchFilter, OrderingFilter
-from ..models import Vehicle, Brand, EngineType, VehicleType, Model, PhysicalVehicle
+from ..models import Vehicle, Brand, EngineType, VehicleType, Model, PhysicalVehicle, Location
 from ..serializers.vehicle_serializer import (
     VehicleSerializer,
     BrandSerializer,
@@ -8,6 +8,7 @@ from ..serializers.vehicle_serializer import (
     VehicleTypeSerializer,
     ModelSerializer,
     PhysicalVehicleSerializer,
+    LocationSerializer
 )
 from ..custom_permissions.mixed_role_permissions import RoleRequired
 from django_filters.rest_framework import DjangoFilterBackend
@@ -198,3 +199,9 @@ class PhysicalVehicleViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [RoleRequired("manager", "admin")]
         return permission_classes
+    
+class LocationViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Location.objects.all().order_by("location_name", "address")
+    serializer_class = LocationSerializer
+    permission_classes = [permissions.AllowAny]
+    pagination_class = None

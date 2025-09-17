@@ -8,6 +8,7 @@ from api.views.vehicle_view import (
     EngineTypeViewSet,
     VehicleTypeViewSet,
     ModelViewSet,
+    LocationViewSet
 )
 from .views.user_view import UserProfileViewSet, AdminUserProfilesViewSet
 from .views.reservation_view import ReservationViewSet
@@ -25,6 +26,7 @@ router.register(r"brands", BrandViewSet, basename="brand")
 router.register(r"engine-types", EngineTypeViewSet, basename="engine-type")
 router.register(r"vehicle-types", VehicleTypeViewSet, basename="vehicle-type")
 router.register(r"models", ModelViewSet, basename="model")
+router.register(r"locations", LocationViewSet, basename="locations")
 
 router.register(r"user_management",AdminUserProfilesViewSet,basename="user_management")
 router.register(r"user_reservations",ReservationViewSet,basename="user_reservations")

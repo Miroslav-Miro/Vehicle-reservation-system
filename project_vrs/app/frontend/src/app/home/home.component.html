@@ -20,8 +20,20 @@
         </div>
 
         <!-- Quick search (UI only) -->
-        <div class="quick-search">
+        <!-- <div class="quick-search">
             <input type="text" placeholder="Pickup city" />
+            <input type="date" />
+            <input type="date" />
+            <button class="btn btn--primary">Search</button>
+        </div> -->
+        <div class="quick-search">
+            <select [(ngModel)]="pickup" name="pickup">
+                <option [ngValue]="null" disabled>Pickup city</option>
+                <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc">
+                    {{ loc.location_name }} — {{ loc.address }}
+                </option>
+            </select>
+
             <input type="date" />
             <input type="date" />
             <button class="btn btn--primary">Search</button>

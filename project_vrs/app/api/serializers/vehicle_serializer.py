@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import EngineType, Model, Vehicle, VehicleType, Brand, PhysicalVehicle
+from ..models import EngineType, Model, Vehicle, VehicleType, Brand, PhysicalVehicle, Location
 
 
 class VehicleSerializer(serializers.ModelSerializer):
@@ -266,7 +266,7 @@ class PhysicalVehicleSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "car_plate_number": {
                 "help_text": "Unique registration plate, e.g., 'PB1234KT'"
-            }
+            },
         }
 
     def validate_car_plate_number(self, value: str) -> str:
@@ -280,3 +280,18 @@ class PhysicalVehicleSerializer(serializers.ModelSerializer):
         if not cleaned:
             raise serializers.ValidationError("Car plate cannot be empty.")
         return cleaned
+    
+class LocationSerializer(serializers.ModelSerializer):
+    """
+    Locations details.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
+    class Meta:
+        """
+        City name (location_name) and address.
+        """
+
+        model = Location
+        fields = ['location_name', 'address']
