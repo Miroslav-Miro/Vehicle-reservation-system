@@ -200,8 +200,8 @@ class PhysicalVehicleViewSet(viewsets.ModelViewSet):
             permission_classes = [RoleRequired("manager", "admin")]
         return permission_classes
     
-class LocationViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Location.objects.all().order_by("location_name", "address")
-    serializer_class = LocationSerializer
-    permission_classes = [permissions.AllowAny]
-    pagination_class = None
+# class LocationViewSet(viewsets.ReadOnlyModelViewSet):
+#     queryset = Location.objects.all().order_by("location_name", "address")
+#     serializer_class = LocationSerializer
+#     permission_classes = [permissions.AllowAny]
+#     pagination_class = None

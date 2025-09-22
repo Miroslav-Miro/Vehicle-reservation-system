@@ -1,0 +1,469 @@
+/* ======= PALETTE ======= */
+@dark: #2C2A4A;
+@mid: #4F518C;
+@soft: #907AD6;
+@ink: #ffffff;
+@muted: #cfd0df;
+
+/* ======= LAYOUT ======= */
+.container {
+    width: min(1150px, 92%);
+    margin: 0 auto;
+}
+
+/* ======= HERO ======= */
+.hero {
+    position: relative;
+    min-height: 68vh;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(140deg, @dark 0%, @mid 100%);
+    overflow: hidden;
+    isolation: isolate;
+
+    &__bg .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.25;
+    }
+
+    &__bg .blob--1 {
+        width: 420px;
+        height: 420px;
+        background: @soft;
+        top: -120px;
+        right: -80px;
+    }
+
+    &__bg .blob--2 {
+        width: 360px;
+        height: 360px;
+        background: lighten(@mid, 6%);
+        bottom: -120px;
+        left: -80px;
+    }
+
+    &__content {
+        text-align: center;
+        color: @ink;
+        padding: 4rem 0;
+    }
+
+    &__title {
+        font-size: clamp(2.2rem, 3.8vw, 3rem);
+        line-height: 1.1;
+        margin: 0 0 .75rem;
+
+        span {
+            color: @soft;
+            display: block;
+        }
+    }
+
+    &__subtitle {
+        color: @muted;
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+    }
+
+    &__actions {
+        display: inline-flex;
+        gap: .8rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* ======= QUICK SEARCH (bars) ======= */
+.quick-search {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr auto;
+    gap: .6rem;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .12);
+    padding: .9rem;
+    /* a tad more breathing space */
+    border-radius: 16px;
+    /* a touch softer */
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .15);
+    /* subtle lift */
+
+    /* “grouping” hint via a faint inner gradient */
+    background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, 0));
+
+    input,
+    select,
+    button {
+        border-radius: 10px;
+    }
+
+    input,
+    select {
+        background: rgba(255, 255, 255, .10);
+        border: 1px solid rgba(255, 255, 255, .16);
+        color: @ink;
+        padding: .7rem .85rem;
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, .65);
+        }
+
+        &:hover {
+            border-color: rgba(255, 255, 255, .28);
+            background: rgba(255, 255, 255, .12);
+        }
+
+        &:focus {
+            border-color: @soft;
+            box-shadow: 0 0 0 3px fade(@soft, 18%);
+            background: rgba(255, 255, 255, .13);
+        }
+
+        &:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+    }
+
+    /* datetime input better contrast in dark */
+    input[type="date"],
+    input[type="datetime-local"] {
+        color-scheme: dark;
+    }
+
+    select {
+        appearance: none;
+        background-image:
+            linear-gradient(45deg, transparent 50%, @ink 50%),
+            linear-gradient(135deg, @ink 50%, transparent 50%);
+        background-position:
+            calc(100% - 18px) 52%,
+            calc(100% - 12px) 52%;
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        padding-right: 2.2rem;
+        /* space for caret */
+    }
+
+    select option {
+        background: @dark;
+        color: @ink;
+        padding: .6rem;
+    }
+
+    /* compact icon button used for the small clear (×) controls */
+    .clear {
+        padding: 0 .5rem;
+        border: 1px solid rgba(255, 255, 255, .16);
+        background: rgba(255, 255, 255, .06);
+        color: @muted;
+        height: 42px;
+        /* visually match inputs */
+        line-height: 1;
+        border-radius: 10px;
+        transition: background .15s ease, border-color .15s ease, color .15s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, .12);
+            color: @ink;
+            border-color: rgba(255, 255, 255, .28);
+        }
+
+        &:disabled {
+            opacity: .5;
+            cursor: default;
+        }
+    }
+
+    /* a little rhythm between stacked bars */
+    &+.quick-search {
+        margin-top: .9rem;
+    }
+
+    .btn {
+        padding: .7rem 1.05rem;
+    }
+
+    @media (max-width: 1100px) {
+        grid-template-columns: 1.4fr 1fr auto;
+        /* give the first column more room on mid screens */
+    }
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1.2fr 1fr 1fr;
+
+        .btn {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 760px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* tiny wrappers around selects + clear buttons */
+.select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    width: 100%;
+    /* so grid sizing applies nicely */
+}
+
+/* ======= “CLEAR ALL” button spacing ======= */
+.btn.btn--ghost {
+    margin-top: .9rem;
+}
+
+/* ======= SECTIONS ======= */
+.section {
+    padding: 2.6rem 0 2rem;
+
+    &__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 1.1rem;
+
+        h2 {
+            color: @ink;
+            margin: 0;
+            font-size: 1.6rem;
+            letter-spacing: .2px;
+        }
+
+        .link {
+            color: @muted;
+            text-decoration: none;
+
+            &:hover {
+                color: @ink;
+            }
+        }
+    }
+}
+
+.center {
+    text-align: center;
+    color: @ink;
+    margin-bottom: 1.2rem;
+}
+
+/* ======= CARDS (results) ======= */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    /* slightly wider min for nicer titles */
+    gap: 1.1rem;
+}
+
+.card {
+    background: @dark;
+    border: 1px solid rgba(255, 255, 255, .10);
+    border-radius: 16px;
+    overflow: hidden;
+    color: @ink;
+    display: grid;
+    grid-template-rows: 140px auto;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, .16);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, .18);
+    }
+
+    &__media {
+        background: linear-gradient(180deg, fade(@soft, 22%), fade(@mid, 14%));
+        display: grid;
+        place-items: center;
+    }
+
+    .img-skeleton {
+        color: rgba(255, 255, 255, .75);
+        font-size: .96rem;
+    }
+
+    &__body {
+        padding: 1rem;
+
+        h3 {
+            margin: 0 0 .35rem;
+            font-size: 1.06rem;
+            letter-spacing: .2px;
+        }
+
+        p {
+            margin: 0 0 .7rem;
+            color: @muted;
+        }
+
+        .price {
+            font-weight: 800;
+            margin-bottom: .65rem;
+            font-size: 1.02rem;
+
+            span {
+                font-weight: 500;
+                color: @muted;
+            }
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            color: @muted;
+            font-size: .93rem;
+        }
+    }
+}
+
+/* ======= FEATURES (optional reuse) ======= */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: .9rem;
+    margin-top: 1rem;
+}
+
+.feature {
+    background: @dark;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 14px;
+    padding: 1rem;
+    color: @ink;
+    text-align: center;
+
+    .icon {
+        font-size: 1.6rem;
+        margin-bottom: .4rem;
+    }
+
+    h3 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+    }
+
+    p {
+        margin: 0;
+        color: @muted;
+        font-size: .95rem;
+    }
+}
+
+/* ======= CTA STRIP (optional) ======= */
+.cta {
+    background: radial-gradient(80% 60% at 50% 50%, fade(@soft, 18%), transparent);
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    padding: 2rem 0;
+
+    &__inner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        color: @ink;
+
+        h3 {
+            margin: 0;
+        }
+
+        @media (max-width: 720px) {
+            grid-template-columns: 1fr;
+            text-align: center;
+
+            .cta__actions {
+                justify-content: center;
+            }
+        }
+    }
+
+    &__actions {
+        display: inline-flex;
+        gap: .75rem;
+    }
+}
+
+/* ======= BUTTONS ======= */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .7rem 1.1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    color: @ink;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s ease;
+    background: transparent;
+
+    &--primary {
+        background: @mid;
+        border-color: fade(@ink, 18%);
+
+        &:hover {
+            background: lighten(@mid, 6%);
+        }
+    }
+
+    &--ghost {
+        background: transparent;
+
+        &:hover {
+            background: rgba(255, 255, 255, .08);
+        }
+    }
+
+    &--tiny {
+        padding: .45rem .8rem;
+        border-radius: 10px;
+        font-size: .9rem;
+
+        &:hover {
+            background: rgba(255, 255, 255, .08);
+        }
+    }
+}
+
+/* ======= CLEAR BUTTONS (generic) ======= */
+.select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    width: 100%;
+}
+
+.select-wrap .clear {
+    border: none;
+    background: rgba(255, 255, 255, .06);
+    color: @muted;
+    font-size: 1rem;
+    line-height: 1;
+    border: 1px solid rgba(255, 255, 255, .14);
+    height: 42px;
+    border-radius: 10px;
+    padding: 0 .5rem;
+
+    &:hover {
+        color: @ink;
+        background: rgba(255, 255, 255, .12);
+        border-color: rgba(255, 255, 255, .22);
+    }
+
+    &:disabled {
+        opacity: .4;
+        cursor: default;
+    }
+}

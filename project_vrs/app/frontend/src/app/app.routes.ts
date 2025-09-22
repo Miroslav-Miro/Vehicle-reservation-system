@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './auth/login/login.component';
+import { VehicleListComponent } from './vehicle-list/vehicle-list.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { CurrentReservationsComponent } from './current-reservations/current-reservations.component';
 import { HistoryReservationsComponent } from './history-reservations/history-reservations.component';
@@ -13,6 +14,7 @@ import { GuestGuard } from './auth/guest.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'vehicles', component: VehicleListComponent },
   { path: 'auth/login', component: LoginComponent, canMatch: [GuestGuard] },
   { path: 'auth/register', component: RegisterComponent, canMatch: [GuestGuard] },
   { path: 'reservations/current',component: CurrentReservationsComponent, canActivate: [AuthGuard]},

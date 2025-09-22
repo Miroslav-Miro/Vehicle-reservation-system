@@ -1,0 +1,113 @@
+<!-- HERO -->
+<section class="hero">
+    <div class="hero__bg">
+        <span class="blob blob--1"></span>
+        <span class="blob blob--2"></span>
+    </div>
+
+    <div class="hero__content container">
+        <h1 class="hero__title">
+            Find your ride.
+            <span>Search & book instantly.</span>
+        </h1>
+        <p class="hero__subtitle">
+            Filter by location, brand, type, and more. Get only cars available in your dates.
+        </p>
+
+        <!-- Search Form -->
+        <form class="quick-search" (ngSubmit)="searchVehicles()">
+            <select [(ngModel)]="filters.location_id" name="location_id" required>
+                <option [ngValue]="null" disabled>Pickup city</option>
+                <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc.id">
+                    {{ loc.location_name }} — {{ loc.address }}
+                </option>
+            </select>
+
+            <input type="datetime-local" [(ngModel)]="filters.start" name="start" />
+            <button type="button" class="clear" (click)="filters.start = ''">×</button>
+
+            <input type="datetime-local" [(ngModel)]="filters.end" name="end" />
+            <button type="button" class="clear" (click)="filters.end = ''">×</button>
+            <button class="btn btn--primary" type="submit">Search</button>
+        </form>
+
+        <!-- Optional Filters -->
+        <div class="quick-search" style="margin-top: 1rem">
+            <!-- Brand -->
+            <div class="select-wrap">
+                <select [(ngModel)]="filters.brand_id" (change)="onBrandChange()" name="brand_id">
+                    <option [ngValue]="null">Any brand</option> <!-- allow clearing -->
+                    <option *ngFor="let brand of brands" [ngValue]="brand.id">
+                        {{ brand.brand_name }}
+                    </option>
+                </select>
+                <button type="button" class="clear" (click)="clearBrand()">×</button>
+            </div>
+
+            <!-- Model (depends on brand) -->
+            <div class="select-wrap">
+                <select [(ngModel)]="filters.model_id" name="model_id" [disabled]="!models.length">
+                    <option [ngValue]="null">Any model</option>
+                    <option *ngFor="let model of models" [ngValue]="model.id">
+                        {{ model.model_name }}
+                    </option>
+                </select>
+                <button type="button" class="clear" (click)="clearModel()" [disabled]="!models.length">×</button>
+            </div>
+
+            <!-- Vehicle Type -->
+            <div class="select-wrap">
+                <select [(ngModel)]="selectedVehicleTypeId" (change)="onVehicleTypeChange()" name="vehicle_type_id">
+                    <option [ngValue]="null">Any type</option>
+                    <option *ngFor="let t of vehicleTypes" [ngValue]="t.id">
+                        {{ t.vehicle_type }}
+                    </option>
+                </select>
+                <button type="button" class="clear" (click)="clearVehicleType()">×</button>
+            </div>
+
+            <!-- Engine Type -->
+            <div class="select-wrap">
+                <select [(ngModel)]="selectedEngineTypeId" (change)="onEngineTypeChange()" name="engine_type_id">
+                    <option [ngValue]="null">Any engine</option>
+                    <option *ngFor="let e of engineTypes" [ngValue]="e.id">
+                        {{ e.engine_type }}
+                    </option>
+                </select>
+                <button type="button" class="clear" (click)="clearEngineType()">×</button>
+            </div>
+        </div>
+        <!-- Clear ALL -->
+        <button type="button" class="btn btn--ghost" (click)="clearAll()">Clear all filters</button>
+
+        <div class="quick-search" style="margin-top: 0.8rem">
+            <input type="number" [(ngModel)]="filters.price_min" name="price_min" placeholder="Min Price" />
+            <input type="number" [(ngModel)]="filters.price_max" name="price_max" placeholder="Max Price" />
+            <input type="number" [(ngModel)]="filters.seats_min" name="seats_min" placeholder="Min Seats" />
+            <input type="number" [(ngModel)]="filters.seats_max" name="seats_max" placeholder="Max Seats" />
+        </div>
+    </div>
+</section>
+
+<!-- RESULTS -->
+<section class="section container" *ngIf="vehicles.length > 0">
+    <div class="section__head">
+        <h2>Available vehicles</h2>
+    </div>
+
+    <div class="cards">
+        <article class="card" *ngFor="let v of vehicles">
+            <div class="card__media">
+                <div class="img-skeleton">{{ v.brand }} {{ v.model }}</div>
+            </div>
+            <div class="card__body">
+                <h3>{{ v.brand }} {{ v.model }}</h3>
+                <p>
+                    {{ v.engine_type }} • {{ v.seats }} seats • {{ v.vehicle_type }}
+                </p>
+                <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
+                <div>Available: {{ v.available_count }}</div>
+            </div>
+        </article>
+    </div>
+</section>
