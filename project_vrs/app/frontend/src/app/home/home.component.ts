@@ -1,25 +1,26 @@
 import { Component } from '@angular/core';
-import { LocationService } from '../services/location.service';
-import { Location } from '../services/location.service';
-import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { Vehicle, VehicleService } from '../services/random-vehicle.service';
 
 @Component({
   selector: 'app-home',
-  standalone: true,  
-  imports: [CommonModule,FormsModule],
+  standalone: true,
+  imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.less'
 })
 export class HomeComponent implements OnInit {
-  locations$!: Observable<Location[]>;
-  pickup: Location | null = null;   // <-- needed
+  featured: Vehicle[] = [];
 
-  constructor(private locationService: LocationService) {}
+  constructor(private vehicleService: VehicleService) { }
 
   ngOnInit(): void {
-    this.locations$ = this.locationService.getAll(); // returns array (see Option A)
+    this.vehicleService.getFeatured(4).subscribe({
+      next: (res) => (this.featured = res),
+      error: (err) => console.error(err),
+    });
   }
 }

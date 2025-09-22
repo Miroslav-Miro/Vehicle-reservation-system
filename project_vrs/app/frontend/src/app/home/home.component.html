@@ -15,28 +15,7 @@
         </p>
 
         <div class="hero__actions">
-            <a routerLink="/reservations/current" class="btn btn--primary">My Reservations</a>
-            <a routerLink="/auth/register" class="btn btn--ghost">Create Account</a>
-        </div>
-
-        <!-- Quick search (UI only) -->
-        <!-- <div class="quick-search">
-            <input type="text" placeholder="Pickup city" />
-            <input type="date" />
-            <input type="date" />
-            <button class="btn btn--primary">Search</button>
-        </div> -->
-        <div class="quick-search">
-            <select [(ngModel)]="pickup" name="pickup">
-                <option [ngValue]="null" disabled>Pickup city</option>
-                <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc">
-                    {{ loc.location_name }} — {{ loc.address }}
-                </option>
-            </select>
-
-            <input type="date" />
-            <input type="date" />
-            <button class="btn btn--primary">Search</button>
+            <a routerLink="/vehicles" class="btn btn--primary"> Browse </a>
         </div>
     </div>
 </section>
@@ -45,47 +24,24 @@
 <section class="section container">
     <div class="section__head">
         <h2>Featured vehicles</h2>
-        <a routerLink="/dashboard" class="link">Browse all →</a>
+        <a routerLink="/vehicles" class="link">Browse all →</a>
     </div>
 
     <div class="cards">
-        <article class="card">
+        <article class="card" *ngFor="let v of featured">
             <div class="card__media">
-                <div class="img-skeleton">Mercedes C-Class</div>
+                <div class="img-skeleton">{{ v.brand }} {{ v.model }}</div>
             </div>
             <div class="card__body">
-                <h3>Mercedes C-Class</h3>
-                <p>Diesel • 5 seats • Sedan</p>
-                <div class="price">€50 <span>/ day</span></div>
-                <a routerLink="/dashboard" class="btn btn--tiny">View</a>
-            </div>
-        </article>
-
-        <article class="card">
-            <div class="card__media">
-                <div class="img-skeleton">BMW 3 Series</div>
-            </div>
-            <div class="card__body">
-                <h3>BMW 3 Series</h3>
-                <p>Petrol • 5 seats • Sedan</p>
-                <div class="price">€55 <span>/ day</span></div>
-                <a routerLink="/dashboard" class="btn btn--tiny">View</a>
-            </div>
-        </article>
-
-        <article class="card">
-            <div class="card__media">
-                <div class="img-skeleton">Audi A4</div>
-            </div>
-            <div class="card__body">
-                <h3>Audi A4</h3>
-                <p>Hybrid • 5 seats • Sedan</p>
-                <div class="price">€58 <span>/ day</span></div>
-                <a routerLink="/dashboard" class="btn btn--tiny">View</a>
+                <h3>{{ v.brand }} {{ v.model }}</h3>
+                <p>{{ v.engine_type }} • {{ v.seats }} seats • {{ v.vehicle_type }}</p>
+                <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
+                <a [routerLink]="['/vehicle', v.vehicle_id]" class="btn btn--tiny">View</a>
             </div>
         </article>
     </div>
 </section>
+
 
 <!-- WHY CHOOSE US -->
 <section class="section container">

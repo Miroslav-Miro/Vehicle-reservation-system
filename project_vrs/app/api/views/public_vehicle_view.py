@@ -15,27 +15,7 @@ from ..serializers.public_vehicle_serializer import (
     VehicleTypeSerializerForFilter,
     EngineTypeSerializerForFilter
 )
-from ..filters.public_vehicle_filters import PublicVehicleAvailabilityFilter
-
 class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
-    """
-    Public endpoint: returns conceptual vehicles with counts
-    of how many units are available in a location/time window.
-
-    Required params:
-      - location_id
-      - start (ISO8601 datetime, e.g. 2025-09-20T10:00:00Z)
-      - end   (ISO8601 datetime, e.g. 2025-09-22T10:00:00Z)
-
-    Optional params:
-      - brand
-      - model
-      - vehicle_type
-      - engine_type
-      - price_min / price_max
-      - seats_min / seats_max
-    """
-
     permission_classes = [AllowAny]
 
     def _parse_range(self, start_str, end_str):
@@ -58,34 +38,63 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
         start_str = request.query_params.get("start")
         end_str = request.query_params.get("end")
 
-        if not location_id or not start_str or not end_str:
+        # --- validate parameter combinations ---
+        if location_id and (not start_str or not end_str):
             return Response(
-                {"detail": "location_id, start, end are required."}, status=400
+                {"detail": "When location_id is provided, start and end are required."},
+                status=400,
+            )
+        if (start_str and not end_str) or (end_str and not start_str):
+            return Response(
+                {"detail": "Provide both start and end, or neither."},
+                status=400,
             )
 
-        try:
-            start, end = self._parse_range(start_str, end_str)
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=400)
+        # Parse time range if both provided (used in the two availability branches)
+        start = end = None
+        if start_str and end_str:
+            try:
+                start, end = self._parse_range(start_str, end_str)
+            except ValueError as e:
+                return Response({"detail": str(e)}, status=400)
 
-        # Which reservation statuses block availability
         BLOCKING = ["ACTIVE"]
 
-        overlapping = PhysicalVehicleReservation.objects.filter(
-            physical_vehicle_id=OuterRef("pk"),
-            reservation__start_date__lt=end,
-            reservation__end_date__gt=start,
-            reservation__status__status__in=BLOCKING,
-        )
+        # --- build base queryset in 3 scenarios ---
+        if location_id and start and end:
+            # A) Availability in a specific location (current behavior)
+            overlapping = PhysicalVehicleReservation.objects.filter(
+                physical_vehicle_id=OuterRef("pk"),
+                reservation__start_date__lt=end,
+                reservation__end_date__gt=start,
+                reservation__status__status__in=BLOCKING,
+            )
+            qs = (
+                PhysicalVehicle.objects.filter(location_id=location_id)
+                .annotate(is_blocked=Exists(overlapping))
+                .filter(is_blocked=False)
+            )
 
-        qs = (
-            PhysicalVehicle.objects.filter(location_id=location_id)
-            .annotate(is_blocked=Exists(overlapping))
-            .filter(is_blocked=False)
-        )
+        elif (not location_id) and start and end:
+            # B) Availability across ALL locations (free units globally)
+            overlapping = PhysicalVehicleReservation.objects.filter(
+                physical_vehicle_id=OuterRef("pk"),
+                reservation__start_date__lt=end,
+                reservation__end_date__gt=start,
+                reservation__status__status__in=BLOCKING,
+            )
+            qs = (
+                PhysicalVehicle.objects.all()
+                .annotate(is_blocked=Exists(overlapping))
+                .filter(is_blocked=False)
+            )
 
-        brand = request.query_params.get("brand")
-        model = request.query_params.get("model")
+        else:
+            # C) No dates → just inventory counts (no availability filtering)
+            qs = PhysicalVehicle.objects.all()
+
+        brand_id = request.query_params.get("brand_id")
+        model_id = request.query_params.get("model_id")
         vehicle_type = request.query_params.get("vehicle_type")
         engine_type = request.query_params.get("engine_type")
         price_min = request.query_params.get("price_min")
@@ -93,10 +102,10 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
         seats_min = request.query_params.get("seats_min")
         seats_max = request.query_params.get("seats_max")
 
-        if brand:
-            qs = qs.filter(vehicle__model__brand__brand_name__icontains=brand)
-        if model:
-            qs = qs.filter(vehicle__model__model_name__icontains=model)
+        if brand_id:
+            qs = qs.filter(vehicle__brand_id=brand_id)
+        if model_id:
+            qs = qs.filter(vehicle__model_id=model_id)
         if vehicle_type:
             qs = qs.filter(vehicle__vehicle_type__vehicle_type__icontains=vehicle_type)
         if engine_type:
@@ -110,6 +119,14 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
         if seats_max:
             qs = qs.filter(vehicle__amount_seats__lte=seats_max)
 
+        
+        
+        # ------------------------------
+        # Aggregate to conceptual vehicles
+        # In all branches we keep the same payload shape with "available_count"
+        # - In A/B it means free units in the time window
+        # - In C it means total units (no availability window)
+        # ------------------------------
         qs = (
             qs.values(
                 "vehicle_id",
@@ -123,6 +140,13 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
             .annotate(available_count=Count("id"))
             .order_by("vehicle__model__brand__brand_name", "vehicle__model__model_name")
         )
+        random_count = request.query_params.get("random")
+        if random_count:
+            try:
+                random_count = int(random_count)
+                qs = qs.order_by("?")[:random_count]
+            except ValueError:
+                pass
 
         data = [
             {
@@ -137,8 +161,8 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
             }
             for row in qs
         ]
-
         return Response(PublicVehicleAvailabilitySerializer(data, many=True).data)
+
 
 class LocationViewSetFiltering(viewsets.ReadOnlyModelViewSet):
     queryset = Location.objects.all().order_by("location_name", "address")

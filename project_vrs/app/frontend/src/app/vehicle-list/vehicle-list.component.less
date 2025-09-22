@@ -1,17 +1,44 @@
-/* ======= PALETTE ======= */
+/* ================================
+   PALETTE
+================================ */
 @dark: #2C2A4A;
 @mid: #4F518C;
 @soft: #907AD6;
 @ink: #ffffff;
 @muted: #cfd0df;
 
-/* ======= LAYOUT ======= */
+/* ================================
+   GLOBAL / LAYOUT
+================================ */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+    background: @dark;
+    color: @ink;
+}
+
 .container {
     width: min(1150px, 92%);
     margin: 0 auto;
 }
 
-/* ======= HERO ======= */
+/* small utilities */
+.mt-6 {
+    margin-top: .6rem;
+}
+
+/* ================================
+   HERO
+================================ */
 .hero {
     position: relative;
     min-height: 68vh;
@@ -25,7 +52,8 @@
         position: absolute;
         border-radius: 50%;
         filter: blur(70px);
-        opacity: 0.25;
+        opacity: .25;
+        pointer-events: none;
     }
 
     &__bg .blob--1 {
@@ -47,13 +75,13 @@
     &__content {
         text-align: center;
         color: @ink;
-        padding: 4rem 0;
+        padding: 3.2rem 0;
     }
 
     &__title {
         font-size: clamp(2.2rem, 3.8vw, 3rem);
         line-height: 1.1;
-        margin: 0 0 .75rem;
+        margin: 0 0 .7rem;
 
         span {
             color: @soft;
@@ -63,38 +91,37 @@
 
     &__subtitle {
         color: @muted;
-        margin-bottom: 1.5rem;
-        font-size: 1.05rem;
+        margin: 0 0 1.1rem;
+        font-size: 1.03rem;
     }
 
     &__actions {
         display: inline-flex;
-        gap: .8rem;
-        margin-bottom: 2rem;
+        gap: .75rem;
+        margin-bottom: 1.6rem;
         flex-wrap: wrap;
         justify-content: center;
     }
 }
 
-/* ======= QUICK SEARCH (bars) ======= */
+/* ================================
+   QUICK SEARCH (bars)
+   - compact by default
+   - modifiers: --tight / --compact (both reduce further)
+================================ */
 .quick-search {
     display: grid;
     grid-template-columns: 1.2fr 1fr 1fr auto;
-    gap: .6rem;
+    gap: .5rem;
+    padding: .7rem .75rem;
+    border-radius: 14px;
     background: rgba(255, 255, 255, .06);
     border: 1px solid rgba(255, 255, 255, .12);
-    padding: .9rem;
-    /* a tad more breathing space */
-    border-radius: 16px;
-    /* a touch softer */
     backdrop-filter: blur(6px);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, .15);
-    /* subtle lift */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, 0));
 
-    /* “grouping” hint via a faint inner gradient */
-    background-image:
-        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, 0));
-
+    /* shared controls */
     input,
     select,
     button {
@@ -106,7 +133,7 @@
         background: rgba(255, 255, 255, .10);
         border: 1px solid rgba(255, 255, 255, .16);
         color: @ink;
-        padding: .7rem .85rem;
+        padding: .6rem .8rem;
         outline: none;
         transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 
@@ -115,7 +142,7 @@
         }
 
         &:hover {
-            border-color: rgba(255, 255, 255, .28);
+            border-color: rgba(255, 255, 255, .26);
             background: rgba(255, 255, 255, .12);
         }
 
@@ -131,14 +158,16 @@
         }
     }
 
-    /* datetime input better contrast in dark */
+    /* make date inputs readable in dark */
     input[type="date"],
     input[type="datetime-local"] {
         color-scheme: dark;
     }
 
+    /* select caret */
     select {
         appearance: none;
+        padding-right: 2rem;
         background-image:
             linear-gradient(45deg, transparent 50%, @ink 50%),
             linear-gradient(135deg, @ink 50%, transparent 50%);
@@ -147,8 +176,6 @@
             calc(100% - 12px) 52%;
         background-size: 6px 6px, 6px 6px;
         background-repeat: no-repeat;
-        padding-right: 2.2rem;
-        /* space for caret */
     }
 
     select option {
@@ -157,22 +184,21 @@
         padding: .6rem;
     }
 
-    /* compact icon button used for the small clear (×) controls */
+    /* small clear button: default size */
     .clear {
+        height: 38px;
         padding: 0 .5rem;
+        border-radius: 10px;
         border: 1px solid rgba(255, 255, 255, .16);
         background: rgba(255, 255, 255, .06);
         color: @muted;
-        height: 42px;
-        /* visually match inputs */
         line-height: 1;
-        border-radius: 10px;
         transition: background .15s ease, border-color .15s ease, color .15s ease;
 
         &:hover {
             background: rgba(255, 255, 255, .12);
             color: @ink;
-            border-color: rgba(255, 255, 255, .28);
+            border-color: rgba(255, 255, 255, .24);
         }
 
         &:disabled {
@@ -181,18 +207,14 @@
         }
     }
 
-    /* a little rhythm between stacked bars */
+    /* tight stack spacing */
     &+.quick-search {
-        margin-top: .9rem;
+        margin-top: .6rem;
     }
 
-    .btn {
-        padding: .7rem 1.05rem;
-    }
-
+    /* responsiveness */
     @media (max-width: 1100px) {
         grid-template-columns: 1.4fr 1fr auto;
-        /* give the first column more room on mid screens */
     }
 
     @media (max-width: 900px) {
@@ -208,198 +230,56 @@
     }
 }
 
-/* tiny wrappers around selects + clear buttons */
+/* variants to reduce spacing further (used by your HTML) */
+.quick-search--tight {
+    gap: .45rem;
+    padding: .6rem .7rem;
+}
+
+.quick-search--compact {
+    grid-template-columns: repeat(4, 1fr);
+    gap: .5rem;
+    padding: .55rem .65rem;
+    border-radius: 12px;
+}
+
+/* small control height (apply via class) */
+
+/* input grouped with a small clear button */
+.field-with-clear {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .35rem;
+}
+
+/* tiny clear for date inputs */
+.clear--xs {
+    height: 34px !important;
+    padding: 0 .4rem !important;
+    font-size: .9rem !important;
+    line-height: 1 !important;
+}
+
+/* ================================
+   SELECT WRAP (select + clear)
+================================ */
 .select-wrap {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: .45rem;
+    gap: .4rem;
     width: 100%;
-    /* so grid sizing applies nicely */
 }
 
-/* ======= “CLEAR ALL” button spacing ======= */
-.btn.btn--ghost {
-    margin-top: .9rem;
-}
-
-/* ======= SECTIONS ======= */
-.section {
-    padding: 2.6rem 0 2rem;
-
-    &__head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-bottom: 1.1rem;
-
-        h2 {
-            color: @ink;
-            margin: 0;
-            font-size: 1.6rem;
-            letter-spacing: .2px;
-        }
-
-        .link {
-            color: @muted;
-            text-decoration: none;
-
-            &:hover {
-                color: @ink;
-            }
-        }
-    }
-}
-
-.center {
-    text-align: center;
-    color: @ink;
-    margin-bottom: 1.2rem;
-}
-
-/* ======= CARDS (results) ======= */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    /* slightly wider min for nicer titles */
-    gap: 1.1rem;
-}
-
-.card {
-    background: @dark;
-    border: 1px solid rgba(255, 255, 255, .10);
-    border-radius: 16px;
-    overflow: hidden;
-    color: @ink;
-    display: grid;
-    grid-template-rows: 140px auto;
-    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
-
-    &:hover {
-        transform: translateY(-2px);
-        border-color: rgba(255, 255, 255, .16);
-        box-shadow: 0 14px 28px rgba(0, 0, 0, .18);
-    }
-
-    &__media {
-        background: linear-gradient(180deg, fade(@soft, 22%), fade(@mid, 14%));
-        display: grid;
-        place-items: center;
-    }
-
-    .img-skeleton {
-        color: rgba(255, 255, 255, .75);
-        font-size: .96rem;
-    }
-
-    &__body {
-        padding: 1rem;
-
-        h3 {
-            margin: 0 0 .35rem;
-            font-size: 1.06rem;
-            letter-spacing: .2px;
-        }
-
-        p {
-            margin: 0 0 .7rem;
-            color: @muted;
-        }
-
-        .price {
-            font-weight: 800;
-            margin-bottom: .65rem;
-            font-size: 1.02rem;
-
-            span {
-                font-weight: 500;
-                color: @muted;
-            }
-        }
-
-        .meta {
-            display: flex;
-            align-items: center;
-            gap: .55rem;
-            color: @muted;
-            font-size: .93rem;
-        }
-    }
-}
-
-/* ======= FEATURES (optional reuse) ======= */
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: .9rem;
-    margin-top: 1rem;
-}
-
-.feature {
-    background: @dark;
-    border: 1px solid rgba(255, 255, 255, .08);
-    border-radius: 14px;
-    padding: 1rem;
-    color: @ink;
-    text-align: center;
-
-    .icon {
-        font-size: 1.6rem;
-        margin-bottom: .4rem;
-    }
-
-    h3 {
-        margin: 0 0 .25rem;
-        font-size: 1rem;
-    }
-
-    p {
-        margin: 0;
-        color: @muted;
-        font-size: .95rem;
-    }
-}
-
-/* ======= CTA STRIP (optional) ======= */
-.cta {
-    background: radial-gradient(80% 60% at 50% 50%, fade(@soft, 18%), transparent);
-    border-top: 1px solid rgba(255, 255, 255, .08);
-    padding: 2rem 0;
-
-    &__inner {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 1rem;
-        align-items: center;
-        color: @ink;
-
-        h3 {
-            margin: 0;
-        }
-
-        @media (max-width: 720px) {
-            grid-template-columns: 1fr;
-            text-align: center;
-
-            .cta__actions {
-                justify-content: center;
-            }
-        }
-    }
-
-    &__actions {
-        display: inline-flex;
-        gap: .75rem;
-    }
-}
-
-/* ======= BUTTONS ======= */
+/* ================================
+   BUTTONS
+================================ */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: .5rem;
-    padding: .7rem 1.1rem;
+    padding: .65rem 1.05rem;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, .18);
     color: @ink;
@@ -434,36 +314,255 @@
             background: rgba(255, 255, 255, .08);
         }
     }
+
+    &--sm {
+        padding: .5rem .9rem !important;
+        border-radius: 10px;
+        font-size: .95rem;
+    }
 }
 
-/* ======= CLEAR BUTTONS (generic) ======= */
-.select-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: .45rem;
-    width: 100%;
-}
-
-.select-wrap .clear {
-    border: none;
-    background: rgba(255, 255, 255, .06);
-    color: @muted;
-    font-size: 1rem;
-    line-height: 1;
-    border: 1px solid rgba(255, 255, 255, .14);
-    height: 42px;
+/* ================================
+   FORM ERROR
+================================ */
+.form-error {
+    display: inline-block;
+    padding: .45rem .65rem;
+    border: 1px solid fade(@soft, 35%);
+    background: fade(@soft, 10%);
+    color: @ink;
     border-radius: 10px;
-    padding: 0 .5rem;
+    font-size: .93rem;
+}
+
+/* ================================
+   SECTIONS
+================================ */
+.section {
+    padding: 2.4rem 0 2rem;
+
+    &__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+
+        h2 {
+            color: @ink;
+            margin: 0;
+            font-size: 1.55rem;
+            letter-spacing: .2px;
+        }
+
+        .link {
+            color: @muted;
+            text-decoration: none;
+
+            &:hover {
+                color: @ink;
+            }
+        }
+    }
+}
+
+.center {
+    text-align: center;
+    color: @ink;
+    margin-bottom: 1.1rem;
+}
+
+/* ================================
+   CARDS (results)
+================================ */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background: @dark;
+    border: 1px solid rgba(255, 255, 255, .10);
+    border-radius: 16px;
+    overflow: hidden;
+    color: @ink;
+    display: grid;
+    grid-template-rows: 140px auto;
+    transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
 
     &:hover {
-        color: @ink;
-        background: rgba(255, 255, 255, .12);
-        border-color: rgba(255, 255, 255, .22);
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, .16);
+        box-shadow: 0 14px 28px rgba(0, 0, 0, .18);
     }
 
-    &:disabled {
-        opacity: .4;
-        cursor: default;
+    &__media {
+        background: linear-gradient(180deg, fade(@soft, 22%), fade(@mid, 14%));
+        display: grid;
+        place-items: center;
     }
+
+    .img-skeleton {
+        color: rgba(255, 255, 255, .75);
+        font-size: .96rem;
+    }
+
+    &__body {
+        padding: .9rem 1rem;
+
+        h3 {
+            margin: 0 0 .32rem;
+            font-size: 1.06rem;
+            letter-spacing: .2px;
+        }
+
+        p {
+            margin: 0 0 .6rem;
+            color: @muted;
+        }
+
+        .price {
+            font-weight: 800;
+            margin-bottom: .55rem;
+            font-size: 1.02rem;
+
+            span {
+                font-weight: 500;
+                color: @muted;
+            }
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            color: @muted;
+            font-size: .93rem;
+        }
+    }
+}
+
+/* ================================
+   FEATURES (optional reuse)
+================================ */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: .9rem;
+    margin-top: 1rem;
+}
+
+.feature {
+    background: @dark;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 14px;
+    padding: 1rem;
+    color: @ink;
+    text-align: center;
+
+    .icon {
+        font-size: 1.6rem;
+        margin-bottom: .4rem;
+    }
+
+    h3 {
+        margin: 0 0 .25rem;
+        font-size: 1rem;
+    }
+
+    p {
+        margin: 0;
+        color: @muted;
+        font-size: .95rem;
+    }
+}
+
+/* ================================
+   CTA (optional reuse)
+================================ */
+.cta {
+    background: radial-gradient(80% 60% at 50% 50%, fade(@soft, 18%), transparent);
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    padding: 2rem 0;
+
+    &__inner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        color: @ink;
+
+        h3 {
+            margin: 0;
+        }
+
+        @media (max-width: 720px) {
+            grid-template-columns: 1fr;
+            text-align: center;
+
+            .cta__actions {
+                justify-content: center;
+            }
+        }
+    }
+
+    &__actions {
+        display: inline-flex;
+        gap: .75rem;
+    }
+}
+
+/* compact control height (match inputs) */
+.control--sm {
+  padding: .5rem .7rem !important;  /* was .10rem .10rem */
+  min-height: 36px;
+  font-size: .95rem;
+  line-height: 1.2;
+}
+
+/* input grouped with a small clear button */
+
+/* tiny clear for date inputs - align with control height */
+.clear--xs {
+  height: 36px !important;
+  padding: 0 .4rem !important;
+  font-size: .9rem !important;
+  line-height: 1 !important;
+}
+
+/* make form controls fill their grid cell like inputs do */
+.quick-search select,
+.select-wrap select,
+.field-with-clear input {
+  width: 100%;
+  display: block;
+}
+
+/* SELECT WRAP: make it behave like input+clear (full width select) */
+.select-wrap {
+  display: grid;                /* was inline-flex */
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .35rem;
+  width: 100%;
+}
+.select-wrap .clear {
+  height: 36px;                 /* match .control--sm */
+  padding: 0 .5rem;
+  border-radius: 10px;
+}
+
+/* compact row: give each filter more room by default */
+.quick-search--compact {
+  grid-template-columns: repeat(3, 1fr);   /* was 4 */
+  gap: .5rem;
+  padding: .55rem .65rem;
+  border-radius: 12px;
+}
+
+/* only use 4 columns on very wide screens */
+@media (min-width: 1200px) {
+  .quick-search--compact {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }

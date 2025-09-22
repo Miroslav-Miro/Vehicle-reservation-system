@@ -15,77 +15,98 @@
         </p>
 
         <!-- Search Form -->
-        <form class="quick-search" (ngSubmit)="searchVehicles()">
-            <select [(ngModel)]="filters.location_id" name="location_id" required>
-                <option [ngValue]="null" disabled>Pickup city</option>
+        <form class="quick-search quick-search--tight" (ngSubmit)="searchVehicles()">
+            <select [(ngModel)]="filters.location_id" name="location_id" class="control--sm">
+                <option [ngValue]="null">Any location</option>
                 <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc.id">
                     {{ loc.location_name }} — {{ loc.address }}
                 </option>
             </select>
 
-            <input type="datetime-local" [(ngModel)]="filters.start" name="start" />
-            <button type="button" class="clear" (click)="filters.start = ''">×</button>
+            <!-- start: input + small clear -->
+            <div class="field-with-clear">
+                <input class="control--sm" type="datetime-local" [(ngModel)]="filters.start" name="start" />
+                <button type="button" class="clear clear--xs" (click)="filters.start = ''">×</button>
+            </div>
 
-            <input type="datetime-local" [(ngModel)]="filters.end" name="end" />
-            <button type="button" class="clear" (click)="filters.end = ''">×</button>
-            <button class="btn btn--primary" type="submit">Search</button>
+            <!-- end: input + small clear -->
+            <div class="field-with-clear">
+                <input class="control--sm" type="datetime-local" [(ngModel)]="filters.end" name="end" />
+                <button type="button" class="clear clear--xs" (click)="filters.end = ''">×</button>
+            </div>
+
+            <button class="btn btn--primary btn--sm" type="submit">Search</button>
         </form>
 
+        <div *ngIf="errorMsg" class="form-error" style="margin-top:.4rem;">
+            {{ errorMsg }}
+        </div>
+
         <!-- Optional Filters -->
-        <div class="quick-search" style="margin-top: 1rem">
+        <div class="quick-search quick-search--compact">
             <!-- Brand -->
             <div class="select-wrap">
-                <select [(ngModel)]="filters.brand_id" (change)="onBrandChange()" name="brand_id">
-                    <option [ngValue]="null">Any brand</option> <!-- allow clearing -->
+                <select class="control--sm" [(ngModel)]="filters.brand_id" (change)="onBrandChange()" name="brand_id">
+                    <option [ngValue]="null">Any brand</option>
                     <option *ngFor="let brand of brands" [ngValue]="brand.id">
                         {{ brand.brand_name }}
                     </option>
                 </select>
-                <button type="button" class="clear" (click)="clearBrand()">×</button>
+                <button type="button" class="clear clear--xs" (click)="clearBrand()">×</button>
             </div>
 
-            <!-- Model (depends on brand) -->
+            <!-- Model -->
             <div class="select-wrap">
-                <select [(ngModel)]="filters.model_id" name="model_id" [disabled]="!models.length">
+                <select class="control--sm" [(ngModel)]="filters.model_id" name="model_id" [disabled]="!models.length">
                     <option [ngValue]="null">Any model</option>
                     <option *ngFor="let model of models" [ngValue]="model.id">
                         {{ model.model_name }}
                     </option>
                 </select>
-                <button type="button" class="clear" (click)="clearModel()" [disabled]="!models.length">×</button>
+                <button type="button" class="clear clear--xs" (click)="clearModel()"
+                    [disabled]="!models.length">×</button>
             </div>
 
             <!-- Vehicle Type -->
             <div class="select-wrap">
-                <select [(ngModel)]="selectedVehicleTypeId" (change)="onVehicleTypeChange()" name="vehicle_type_id">
+                <select class="control--sm" [(ngModel)]="selectedVehicleTypeId" (change)="onVehicleTypeChange()"
+                    name="vehicle_type_id">
                     <option [ngValue]="null">Any type</option>
                     <option *ngFor="let t of vehicleTypes" [ngValue]="t.id">
                         {{ t.vehicle_type }}
                     </option>
                 </select>
-                <button type="button" class="clear" (click)="clearVehicleType()">×</button>
+                <button type="button" class="clear clear--xs" (click)="clearVehicleType()">×</button>
             </div>
 
             <!-- Engine Type -->
             <div class="select-wrap">
-                <select [(ngModel)]="selectedEngineTypeId" (change)="onEngineTypeChange()" name="engine_type_id">
+                <select class="control--sm" [(ngModel)]="selectedEngineTypeId" (change)="onEngineTypeChange()"
+                    name="engine_type_id">
                     <option [ngValue]="null">Any engine</option>
                     <option *ngFor="let e of engineTypes" [ngValue]="e.id">
                         {{ e.engine_type }}
                     </option>
                 </select>
-                <button type="button" class="clear" (click)="clearEngineType()">×</button>
+                <button type="button" class="clear clear--xs" (click)="clearEngineType()">×</button>
             </div>
         </div>
-        <!-- Clear ALL -->
-        <button type="button" class="btn btn--ghost" (click)="clearAll()">Clear all filters</button>
 
-        <div class="quick-search" style="margin-top: 0.8rem">
-            <input type="number" [(ngModel)]="filters.price_min" name="price_min" placeholder="Min Price" />
-            <input type="number" [(ngModel)]="filters.price_max" name="price_max" placeholder="Max Price" />
-            <input type="number" [(ngModel)]="filters.seats_min" name="seats_min" placeholder="Min Seats" />
-            <input type="number" [(ngModel)]="filters.seats_max" name="seats_max" placeholder="Max Seats" />
+        <!-- Clear ALL -->
+        
+
+        <div class="quick-search quick-search--compact mt-6">
+            <input class="control--sm" type="number" [(ngModel)]="filters.price_min" name="price_min"
+                placeholder="Min Price" />
+            <input class="control--sm" type="number" [(ngModel)]="filters.price_max" name="price_max"
+                placeholder="Max Price" />
+            <input class="control--sm" type="number" [(ngModel)]="filters.seats_min" name="seats_min"
+                placeholder="Min Seats" />
+            <input class="control--sm" type="number" [(ngModel)]="filters.seats_max" name="seats_max"
+                placeholder="Max Seats" />
         </div>
+
+        <button type="button" class="btn btn--ghost btn--sm mt-6" (click)="clearAll()">Clear all filters</button>
     </div>
 </section>
 
@@ -106,7 +127,7 @@
                     {{ v.engine_type }} • {{ v.seats }} seats • {{ v.vehicle_type }}
                 </p>
                 <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
-                <div>Available: {{ v.available_count }}</div>
+                <div class="meta">Available: {{ v.available_count }}</div>
             </div>
         </article>
     </div>

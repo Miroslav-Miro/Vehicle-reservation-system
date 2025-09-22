@@ -14,7 +14,7 @@ import { EngineTypeService, EngineType } from '../services/engine-type.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './vehicle-list.component.html',
-  styleUrls: ['./vehicle-list.component.less'] // <- plural, Angular expects styleUrls
+  styleUrls: ['./vehicle-list.component.less'],
 })
 export class VehicleListComponent implements OnInit {
   locations$!: Observable<Location[]>;
@@ -25,9 +25,10 @@ export class VehicleListComponent implements OnInit {
   vehicleTypes: VehicleType[] = [];
   engineTypes: EngineType[] = [];
 
-  // UI model (ids for selects). We'll map them to names for the API.
   selectedVehicleTypeId: number | null = null;
   selectedEngineTypeId: number | null = null;
+
+  errorMsg = ''; // <-- for validation messages
 
   filters: any = {
     location_id: null,
@@ -35,9 +36,8 @@ export class VehicleListComponent implements OnInit {
     end: '',
     brand_id: null,
     model_id: null,
-    // backend expects strings for these two:
-    vehicle_type: '', // will be set from selectedVehicleTypeId before request
-    engine_type: '',  // will be set from selectedEngineTypeId before request
+    vehicle_type: '', // mapped from selectedVehicleTypeId
+    engine_type: '',  // mapped from selectedEngineTypeId
     price_min: null,
     price_max: null,
     seats_min: null,
@@ -50,25 +50,21 @@ export class VehicleListComponent implements OnInit {
     private brandModelService: BrandModelService,
     private vehicleTypeService: VehicleTypeService,
     private engineTypeService: EngineTypeService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    // Locations (async pipe in template)
     this.locations$ = this.locationService.getAll();
 
-    // Brands with nested models
     this.brandModelService.getAll().subscribe({
       next: (res) => (this.brands = res),
       error: (err) => console.error(err),
     });
 
-    // Vehicle types
     this.vehicleTypeService.getAll().subscribe({
       next: (res) => (this.vehicleTypes = res),
       error: (err) => console.error(err),
     });
 
-    // Engine types
     this.engineTypeService.getAll().subscribe({
       next: (res) => (this.engineTypes = res),
       error: (err) => console.error(err),
@@ -78,7 +74,7 @@ export class VehicleListComponent implements OnInit {
   onBrandChange(): void {
     const brand = this.brands.find((b) => b.id === this.filters.brand_id) || null;
     this.models = brand ? brand.models : [];
-    this.filters.model_id = null; // reset model when brand changes or is cleared
+    this.filters.model_id = null;
   }
 
   clearBrand(): void {
@@ -128,31 +124,59 @@ export class VehicleListComponent implements OnInit {
     this.selectedVehicleTypeId = null;
     this.selectedEngineTypeId = null;
     this.models = [];
+    this.errorMsg = '';
   }
 
-  // If you use <input type="datetime-local">, normalize to ISO with seconds + Z
+  // Normalize datetime-local -> ISO with seconds + Z
   private toIsoZ(value: string): string {
-    // value comes like "2025-09-22T19:01"
+    // input like "2025-09-22T19:01" -> "2025-09-22T19:01:00Z"
     return value ? `${value}:00Z` : '';
   }
 
   searchVehicles(): void {
+    this.errorMsg = '';
+
+    const hasLocation = this.filters.location_id !== null && this.filters.location_id !== undefined;
+    const hasStart = !!this.filters.start;
+    const hasEnd = !!this.filters.end;
+
+    // Validation rules:
+    // 1) If location is chosen -> start & end are required
+    if (hasLocation && (!hasStart || !hasEnd)) {
+      this.errorMsg = 'Please choose both start and end dates when a location is selected.';
+      return;
+    }
+    // 2) If only one date is provided -> invalid (must be both or neither)
+    if ((hasStart && !hasEnd) || (!hasStart && hasEnd)) {
+      this.errorMsg = 'Please provide both start and end dates, or clear both.';
+      return;
+    }
+
     let params = new HttpParams();
 
-    // ensure start/end are in full ISO (if you're using datetime-local inputs)
-    const startIso = this.filters.start.includes('T') ? this.toIsoZ(this.filters.start) : this.filters.start;
-    const endIso = this.filters.end.includes('T') ? this.toIsoZ(this.filters.end) : this.filters.end;
+    // start/end normalization only if both provided
+    if (hasStart && hasEnd) {
+      const startIso = this.filters.start.includes('T') ? this.toIsoZ(this.filters.start) : this.filters.start;
+      const endIso = this.filters.end.includes('T') ? this.toIsoZ(this.filters.end) : this.filters.end;
+      params = params.set('start', startIso).set('end', endIso);
+    }
 
-    const payload = {
-      ...this.filters,
-      start: startIso,
-      end: endIso,
-    };
+    // Only include location if it's chosen (Any location -> null)
+    if (hasLocation) {
+      params = params.set('location_id', this.filters.location_id);
+    }
 
-    // Build query only with truthy values
-    for (const key in payload) {
-      if (payload[key]) {
-        params = params.set(key, payload[key]);
+    // Optional filters (only send truthy)
+    const optionalKeys = [
+      'brand_id', 'model_id',
+      'vehicle_type', 'engine_type',
+      'price_min', 'price_max',
+      'seats_min', 'seats_max',
+    ];
+    for (const k of optionalKeys) {
+      const val = this.filters[k];
+      if (val !== null && val !== undefined && val !== '') {
+        params = params.set(k, val);
       }
     }
 
@@ -161,9 +185,15 @@ export class VehicleListComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.vehicles = res;
+          // optional: clear message if user fixed the issue and data came back
+          this.errorMsg = '';
           console.log('API response:', res);
         },
-        error: (err) => console.error(err),
+        error: (err) => {
+          console.error(err);
+          // bubble backend errors to UI (e.g., parse errors)
+          this.errorMsg = err?.error?.detail || 'Something went wrong while searching.';
+        },
       });
   }
 }
