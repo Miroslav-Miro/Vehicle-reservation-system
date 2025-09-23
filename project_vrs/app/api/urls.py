@@ -26,8 +26,11 @@ router.register(r"engine-types", EngineTypeViewSet, basename="engine-type")
 router.register(r"vehicle-types", VehicleTypeViewSet, basename="vehicle-type")
 router.register(r"models", ModelViewSet, basename="model")
 
-router.register(r"user_management",AdminUserProfilesViewSet,basename="user_management")
-router.register(r"user_reservations",ReservationViewSet,basename="user_reservations")
+router.register(
+    r"user_management", AdminUserProfilesViewSet, basename="user_management"
+)
+router.register(r"user_reservations", ReservationViewSet, basename="user_reservations")
+
 
 urlpatterns = [
     path("", include(router.urls)),

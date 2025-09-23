@@ -1,0 +1,1 @@
+Reservation #{{ reservation.id }} status changed: {{ old_status }} → {{ new_status }}
