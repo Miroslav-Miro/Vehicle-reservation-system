@@ -93,7 +93,7 @@
         </div>
 
         <!-- Clear ALL -->
-        
+
 
         <div class="quick-search quick-search--compact mt-6">
             <input class="control--sm" type="number" [(ngModel)]="filters.price_min" name="price_min"
@@ -128,6 +128,13 @@
                 </p>
                 <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
                 <div class="meta">Available: {{ v.available_count }}</div>
+                <a class="btn btn--tiny" [routerLink]="['/vehicles', v.vehicle_id]" [queryParams]="{
+                    location_id: filters.location_id || null,
+                    start: filters.start || null,
+                    end: filters.end || null
+                }">
+                    View
+                </a>
             </div>
         </article>
     </div>

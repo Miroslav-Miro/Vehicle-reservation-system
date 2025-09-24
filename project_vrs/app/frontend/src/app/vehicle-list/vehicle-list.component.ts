@@ -8,11 +8,12 @@ import { LocationService, Location } from '../services/location.service';
 import { BrandModelService, Brand, Model } from '../services/brand-model.service';
 import { VehicleTypeService, VehicleType } from '../services/vehicle-type.service';
 import { EngineTypeService, EngineType } from '../services/engine-type.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-vehicle-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './vehicle-list.component.html',
   styleUrls: ['./vehicle-list.component.less'],
 })
@@ -69,6 +70,8 @@ export class VehicleListComponent implements OnInit {
       next: (res) => (this.engineTypes = res),
       error: (err) => console.error(err),
     });
+
+    this.searchVehicles();
   }
 
   onBrandChange(): void {

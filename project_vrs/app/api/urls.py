@@ -44,14 +44,14 @@ router.register(r"brands_models_filter", BrandModelViewSetFiltering, basename="b
 router.register(r"vehicle_type_filter", VehicleTypeViewSetFiltering, basename="vehicle_type_filter")
 router.register(r"engine_type_filter", EngineTypeViewSetFiltering, basename="engine_type_filter")
 
+public_vehicle_list = PublicVehicleAvailabilityViewSet.as_view({"get": "list"})
+public_vehicle_detail = PublicVehicleAvailabilityViewSet.as_view({"get": "retrieve"})
 
-public_vehicle_availability = PublicVehicleAvailabilityViewSet.as_view({
-    "get": "list",
-})
 
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/register/", RegisterView.as_view(), name="register"),
     path("user_profile/", UserProfileViewSet.as_view(), name="user_profile"),
-    path("public/vehicles/available/", public_vehicle_availability, name="public-vehicles-available")
+    path("public/vehicles/available/", public_vehicle_list, name="public-vehicles-available"),
+    path("public/vehicles/<int:pk>/", public_vehicle_detail, name="public-vehicle-detail")
 ]

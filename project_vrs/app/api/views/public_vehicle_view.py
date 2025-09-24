@@ -6,8 +6,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
+from django.shortcuts import get_object_or_404
 
-from ..models import PhysicalVehicle, PhysicalVehicleReservation, Location, Brand, Model, VehicleType, EngineType
+from ..models import PhysicalVehicle, PhysicalVehicleReservation, Location, Brand, Model, VehicleType, EngineType, Vehicle
 from ..serializers.public_vehicle_serializer import (
     PublicVehicleAvailabilitySerializer,
     LocationSerializer,
@@ -32,6 +33,78 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
         if start >= end:
             raise ValueError("start must be before end")
         return start, end
+    
+    def retrieve(self, request, pk=None):
+        """
+        Detail endpoint for a conceptual Vehicle (pk = Vehicle.id).
+        Optional query params: location_id, start, end (same rules as list).
+        Returns one row with available_count for that vehicle.
+        """
+        # Make sure the vehicle exists
+        vehicle = get_object_or_404(
+            Vehicle.objects.select_related(
+                "model__brand", "vehicle_type", "engine_type"
+            ),
+            pk=pk,
+        )
+
+        # Params
+        location_id = request.query_params.get("location_id")
+        start_str = request.query_params.get("start")
+        end_str = request.query_params.get("end")
+
+        if location_id and (not start_str or not end_str):
+            return Response(
+                {"detail": "When location_id is provided, start and end are required."},
+                status=400,
+            )
+        if (start_str and not end_str) or (end_str and not start_str):
+            return Response(
+                {"detail": "Provide both start and end, or neither."},
+                status=400,
+            )
+
+        start = end = None
+        if start_str and end_str:
+            try:
+                start, end = self._parse_range(start_str, end_str)
+            except ValueError as e:
+                return Response({"detail": str(e)}, status=400)
+
+        BLOCKING = ["active"]  # match your DB casing!
+
+        # Base = physical units for this Vehicle
+        base = PhysicalVehicle.objects.filter(vehicle_id=vehicle.id)
+
+        if location_id:
+            base = base.filter(location_id=location_id)
+
+        if start and end:
+            # Exclude any physical unit that has an overlapping blocking reservation
+            overlapping = PhysicalVehicleReservation.objects.filter(
+                physical_vehicle_id=OuterRef("pk"),
+                reservation__start_date__lt=end,
+                reservation__end_date__gt=start,
+                reservation__status__status__in=BLOCKING,
+            )
+            base = base.annotate(is_blocked=Exists(overlapping)).filter(is_blocked=False)
+
+        # Aggregate a single row
+        row = base.values().aggregate(cnt=Count("id"))
+        available_count = row["cnt"] or 0
+
+        data = {
+            "vehicle_id": vehicle.id,
+            "brand": vehicle.model.brand.brand_name,
+            "model": vehicle.model.model_name,
+            "vehicle_type": vehicle.vehicle_type.vehicle_type,
+            "engine_type": vehicle.engine_type.engine_type,
+            "seats": vehicle.amount_seats,
+            "price_per_day": vehicle.price_per_day,
+            "available_count": available_count,
+        }
+
+        return Response(PublicVehicleAvailabilitySerializer(data).data)
 
     def list(self, request):
         location_id = request.query_params.get("location_id")
@@ -58,7 +131,7 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
             except ValueError as e:
                 return Response({"detail": str(e)}, status=400)
 
-        BLOCKING = ["ACTIVE"]
+        BLOCKING = ["active"]
 
         # --- build base queryset in 3 scenarios ---
         if location_id and start and end:
