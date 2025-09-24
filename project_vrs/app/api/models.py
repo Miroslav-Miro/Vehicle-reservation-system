@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -146,6 +148,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
+
+    def __str__(self):
+        return self.username
 
 
 class LoginEvent(models.Model):
@@ -302,6 +307,14 @@ class Reservation(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    hold_expires_at = models.DateTimeField(null=True, blank=True)
+
+    def set_hold(self, minutes: int = 15):
+        """
+        Utility method: set hold_expires_at to now + minutes.
+        """
+        self.hold_expires_at = timezone.now() + timedelta(minutes=minutes)
 
 
 class PhysicalVehicleReservation(models.Model):

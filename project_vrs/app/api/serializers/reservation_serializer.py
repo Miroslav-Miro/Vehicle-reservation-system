@@ -1,5 +1,24 @@
+from decimal import Decimal
+from datetime import datetime, time, timedelta
+
+from django.conf import settings
+from django.db import transaction
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
-from ..models import *
+
+from ..models import (
+    VehicleType,
+    EngineType,
+    Brand,
+    Model,
+    Vehicle,
+    Location,
+    PhysicalVehicle,
+    PhysicalVehicleReservation,
+    ReservationStatus,
+    Reservation,
+)
 
 
 class CancelReservationSerializer(serializers.Serializer):
@@ -11,6 +30,8 @@ class CancelReservationSerializer(serializers.Serializer):
     """
 
     status = serializers.CharField()
+
+
 class VehicleTypeSerializer(serializers.ModelSerializer):
     """
     Shows the type of the vihicle - sedan, suv, truck etc.
@@ -18,13 +39,15 @@ class VehicleTypeSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     class Meta:
         """
         Shows the id and vehicle type.
         """
 
         model = VehicleType
-        fields = ['id', 'vehicle_type']
+        fields = ["id", "vehicle_type"]
+
 
 class EngineTypeSerializer(serializers.ModelSerializer):
     """
@@ -33,13 +56,15 @@ class EngineTypeSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     class Meta:
         """
         Shows the id and engine type.
         """
 
         model = EngineType
-        fields = ['id', 'engine_type']
+        fields = ["id", "engine_type"]
+
 
 class BrandSerializer(serializers.ModelSerializer):
     """
@@ -48,12 +73,15 @@ class BrandSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     class Meta:
         """
         Shows the id and brand name.
         """
+
         model = Brand
-        fields = ['id',"brand_name"]
+        fields = ["id", "brand_name"]
+
 
 class ModelSerializer(serializers.ModelSerializer):
     """
@@ -62,7 +90,9 @@ class ModelSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     brand = BrandSerializer()
+
     class Meta:
         """
         The class uses brand serializer to show the
@@ -71,7 +101,8 @@ class ModelSerializer(serializers.ModelSerializer):
         """
 
         model = Model
-        fields = ['id',"brand",'model_name']
+        fields = ["id", "brand", "model_name"]
+
 
 class VehicleSerializer(serializers.ModelSerializer):
     """
@@ -80,7 +111,7 @@ class VehicleSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
-    
+
     vehicle_type = VehicleTypeSerializer()
     engine_type = EngineTypeSerializer()
     model = ModelSerializer()
@@ -91,9 +122,16 @@ class VehicleSerializer(serializers.ModelSerializer):
         related attributes using nested serializers.
         """
 
-        ref_name = "VehicleBaseUserReservations" 
+        ref_name = "VehicleBaseUserReservations"
         model = Vehicle
-        fields = ['id', 'amount_seats', 'price_per_day', 'vehicle_type', 'engine_type', 'model']
+        fields = [
+            "id",
+            "amount_seats",
+            "price_per_day",
+            "vehicle_type",
+            "engine_type",
+            "model",
+        ]
 
 
 class LocationSerializer(serializers.ModelSerializer):
@@ -103,13 +141,14 @@ class LocationSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     class Meta:
         """
         City name (location_name) and address.
         """
 
         model = Location
-        fields = ['id', 'location_name', 'address']
+        fields = ["id", "location_name", "address"]
 
 
 class PhysicalVehicleSerializer(serializers.ModelSerializer):
@@ -119,6 +158,7 @@ class PhysicalVehicleSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     vehicle = VehicleSerializer()
     location = LocationSerializer()
 
@@ -129,7 +169,7 @@ class PhysicalVehicleSerializer(serializers.ModelSerializer):
         """
 
         model = PhysicalVehicle
-        fields = ['id', 'car_plate_number', 'vehicle', 'location']
+        fields = ["id", "car_plate_number", "vehicle", "location"]
 
 
 class ReservationStatusSerializer(serializers.ModelSerializer):
@@ -139,12 +179,14 @@ class ReservationStatusSerializer(serializers.ModelSerializer):
     :param serializers: The Django REST framework serializers module.
     :type serializers: module
     """
+
     class Meta:
         """
         The status of the reservation.
         """
+
         model = ReservationStatus
-        fields = ['id', 'status']
+        fields = ["id", "status"]
 
 
 class ReservationSerializer(serializers.ModelSerializer):
@@ -156,6 +198,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     :return: _serialized reservation_
     :rtype: _json_
     """
+
     status = ReservationStatusSerializer()
     pickup_location = LocationSerializer()
     dropoff_location = LocationSerializer()
@@ -170,9 +213,17 @@ class ReservationSerializer(serializers.ModelSerializer):
 
         model = Reservation
         fields = [
-            'id', 'user', 'status', 'total_price', 'start_date', 'end_date',
-            'pickup_location', 'dropoff_location', 'created_at', 'updated_at',
-            'vehicles'
+            "id",
+            "user",
+            "status",
+            "total_price",
+            "start_date",
+            "end_date",
+            "pickup_location",
+            "dropoff_location",
+            "created_at",
+            "updated_at",
+            "vehicles",
         ]
 
     def get_vehicles(self, obj):
@@ -188,6 +239,7 @@ class ReservationSerializer(serializers.ModelSerializer):
         # Get all PhysicalVehicleReservation entries for this reservation
         pvr = PhysicalVehicleReservation.objects.filter(reservation=obj)
         return PhysicalVehicleReservationSerializer(pvr, many=True).data
+
 
 class PhysicalVehicleReservationSerializer(serializers.ModelSerializer):
     """
@@ -207,4 +259,159 @@ class PhysicalVehicleReservationSerializer(serializers.ModelSerializer):
         """
 
         model = PhysicalVehicleReservation
-        fields = ['id', 'physical_vehicle']
+        fields = ["id", "physical_vehicle"]
+
+
+HOLD_MINUTES = int(getattr(settings, "RESERVATION_HOLD_MINUTES", 15))
+
+
+class ReservationCreateSerializer(serializers.Serializer):
+    """
+    POST /api/user_reservations/ (create)
+    """
+
+    start_date = serializers.DateField(help_text="Rental start date (YYYY-MM-DD).")
+    end_date = serializers.DateField(help_text="Rental end date (YYYY-MM-DD).")
+    vehicle_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+        help_text="List of PhysicalVehicle IDs to reserve.",
+    )
+    pickup_location_id = serializers.IntegerField(required=False)
+    dropoff_location_id = serializers.IntegerField(required=False)
+
+    def validate(self, attrs):
+        if attrs["end_date"] <= attrs["start_date"]:
+            raise serializers.ValidationError("end_date must be after start_date.")
+        return attrs
+
+    def _rental_days(self, start, end) -> int:
+        days = (end - start).days
+        if days < 1:
+            raise serializers.ValidationError("Reservation must be at least 1 day.")
+        return days
+
+    @transaction.atomic
+    def create(self, validated):
+        user = self.context["request"].user
+        start_date = validated["start_date"]
+        end_date = validated["end_date"]
+        ids = list(dict.fromkeys(validated["vehicle_ids"]))
+
+        start = timezone.make_aware(datetime.combine(start_date, time.min))
+        end = timezone.make_aware(datetime.combine(end_date, time.min))
+
+        days = self._rental_days(start_date, end_date)
+
+        # fetch selected physical vehicles
+        units = list(
+            PhysicalVehicle.objects.select_related(
+                "vehicle", "vehicle__model", "vehicle__model__brand", "location"
+            ).filter(id__in=ids)
+        )
+        found_ids = {u.id for u in units}
+        missing = [vid for vid in ids if vid not in found_ids]
+        if missing:
+            raise serializers.ValidationError({"vehicle_ids": f"Not found: {missing}"})
+
+        # resolve pickup/dropoff
+        pickup = None
+        dropoff = None
+        pid = validated.get("pickup_location_id")
+        did = validated.get("dropoff_location_id")
+
+        if pid is not None:
+            pickup = Location.objects.filter(pk=pid).first()
+            if not pickup:
+                raise serializers.ValidationError(
+                    {"pickup_location_id": "Invalid location id."}
+                )
+
+        if did is not None:
+            dropoff = Location.objects.filter(pk=did).first()
+            if not dropoff:
+                raise serializers.ValidationError(
+                    {"dropoff_location_id": "Invalid location id."}
+                )
+
+        # if not provided, default to the single location of the chosen vehicles
+        if not pickup or not dropoff:
+            base_loc = units[0].location
+            pickup = pickup or base_loc
+            dropoff = dropoff or base_loc
+
+        # prevent double booking
+        blocking_res_ids = (
+            Reservation.objects.select_for_update()
+            .filter(
+                Q(status__status__in=["CONFIRMED", "ACTIVE"])
+                | Q(
+                    status__status="PENDING_PAYMENT",
+                    hold_expires_at__gt=timezone.now(),
+                )
+            )
+            .values_list("id", flat=True)
+        )
+
+        taken_ids = set(
+            PhysicalVehicleReservation.objects.filter(
+                reservation_id__in=blocking_res_ids,
+                reservation__start_date__lt=end,
+                reservation__end_date__gt=start,
+            ).values_list("physical_vehicle_id", flat=True)
+        )
+        clash = [u.id for u in units if u.id in taken_ids]
+        if clash:
+            raise serializers.ValidationError({"vehicle_ids": f"Unavailable: {clash}"})
+
+        try:
+            pending_status = ReservationStatus.objects.get(
+                status__iexact="PENDING_PAYMENT"
+            )
+        except ReservationStatus.DoesNotExist:
+            raise serializers.ValidationError(
+                {
+                    "non_field_errors": [
+                        "Seed ReservationStatus('PENDING_PAYMENT') first."
+                    ]
+                }
+            )
+
+        # create reservation
+        res = Reservation.objects.create(
+            user=user,
+            start_date=start,
+            end_date=end,
+            status=pending_status,
+            total_price=Decimal("0.00"),
+            pickup_location=pickup,
+            dropoff_location=dropoff,
+        )
+
+        # set short hold
+        res.hold_expires_at = timezone.now() + timedelta(minutes=HOLD_MINUTES)
+        res.save(update_fields=["hold_expires_at"])
+
+        # attach items & compute total
+        total = Decimal("0.00")
+        for u in units:
+            PhysicalVehicleReservation.objects.create(
+                reservation=res,
+                physical_vehicle=u,
+            )
+            total += u.vehicle.price_per_day * days
+
+        res.total_price = total
+        res.save(update_fields=["total_price"])
+
+        # schedule auto expiry
+        try:
+            from email_sender.tasks import expire_unpaid_reservation
+
+            expire_unpaid_reservation.apply_async(
+                args=[res.id], countdown=HOLD_MINUTES * 60
+            )
+        except Exception:
+            pass
+
+        return res
