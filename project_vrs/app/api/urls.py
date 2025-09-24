@@ -35,8 +35,11 @@ router.register(r"vehicle-types", VehicleTypeViewSet, basename="vehicle-type")
 router.register(r"models", ModelViewSet, basename="model")
 # router.register(r"locations", LocationViewSet, basename="locations")
 
-router.register(r"user_management",AdminUserProfilesViewSet,basename="user_management")
-router.register(r"user_reservations",ReservationViewSet,basename="user_reservations")
+router.register(
+    r"user_management", AdminUserProfilesViewSet, basename="user_management"
+)
+router.register(r"user_reservations", ReservationViewSet, basename="user_reservations")
+
 
 ##retrieving data for filtering options
 router.register(r"locations_filter", LocationViewSetFiltering, basename="locations_filter")

@@ -2,127 +2,170 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from ..custom_permissions.mixed_role_permissions import RoleRequired
-from django.utils.timezone import now
 from django.db.models import Prefetch
 
-from ..models import Reservation, PhysicalVehicleReservation, PhysicalVehicle, ReservationStatus
-from ..serializers.reservation_serializer import (
-    ReservationSerializer, CancelReservationSerializer
+from ..custom_permissions.mixed_role_permissions import RoleRequired
+from ..models import (
+    Reservation,
+    PhysicalVehicleReservation,
+    PhysicalVehicle,
 )
-from rest_framework.decorators import action
-from rest_framework import status as drf_status
+from ..serializers.reservation_serializer import (
+    ReservationSerializer,
+    CancelReservationSerializer,
+    ReservationCreateSerializer,
+)
+
+
+# Allowed status
+HISTORY_STATUSES = {"CANCELLED", "COMPLETED", "NO_SHOW", "FAILED_PAYMENT"}
+ACTIVE_STATUSES = {"PENDING_PAYMENT", "CONFIRMED", "ACTIVE"}
+
 
 class ReservationViewSet(viewsets.ModelViewSet):
     """
-    This viewset lists all reservations for a user profile.
-    It has two methods GET and PATCH.
-
-    Detailed flow of the operations:
-
-    1. Frotend with authentificated user (GET /api/user_reservations) 
-    2. urls.py  ->  matches "api/user_reservations" 
-    3. views.py (ReservationsViewSet)  ->  uses ReservationSerializer
-    4. Returns query set for the current user (active or passed reservations)
-
-    OR
-
-    1. Frotend with authentificated user (PATCH /api/user_reservations) 
-    2. urls.py  ->  matches "api/user_reservations" 
-    3. views.py (ReservationsViewSet)  ->  uses CancelReservationSerializer
-    4. Returns the updated reservation
-
-
-    :param viewsets: The Django REST framework viewsets module.
-    :type viewsets: module
-    :return: _viewset instance_
-    :rtype: _ViewSet_
+    User-facing reservations API.
     """
 
+    permission_classes = [IsAuthenticated, RoleRequired("user")]
     serializer_class = ReservationSerializer
-    http_method_names = ['get',"patch"]
-    
+
     def get_permissions(self):
         """
-        This method fetches the permissions for this viewset.
-
-        :return: _list of permissions_
-        :rtype: _list_
+        Return a list of permission instances depending on the HTTP method
         """
-        
-        return [RoleRequired("user")]
+        if self.request.method in ("GET", "HEAD", "OPTIONS", "POST", "PATCH"):
+            return [RoleRequired("user", "manager", "admin")]
+        return [RoleRequired("manager", "admin")]
 
     def get_queryset(self):
         """
-        This method fetches the queryset of reservations.
-        It filters reservations based on user_id (the logged user)
-        and status query parameters. That way reservations can be filtered
-        to show active or passed reservations.
-
-        :return: _queryset of reservations
-        :rtype: _QuerySet_
+        Always scope to the authenticated user's reservations.
         """
+        user = self.request.user
 
-        user_id = self.request.query_params.get("user_id")
-        status = self.request.query_params.get("status")  
-        qs = Reservation.objects.select_related(
-            "status", "pickup_location", "dropoff_location", "user"
-        ).prefetch_related(
-            "physicalvehiclereservation_set__physical_vehicle__vehicle__brand",
-            "physicalvehiclereservation_set__physical_vehicle__vehicle__model",
-            "physicalvehiclereservation_set__physical_vehicle__vehicle__vehicle_type",
-            "physicalvehiclereservation_set__physical_vehicle__vehicle__engine_type",
-            "physicalvehiclereservation_set__physical_vehicle__location",
+        base = (
+            Reservation.objects.select_related(
+                "status", "pickup_location", "dropoff_location", "user"
+            )
+            .prefetch_related(
+                Prefetch(
+                    "physicalvehiclereservation_set",
+                    queryset=PhysicalVehicleReservation.objects.select_related(
+                        "physical_vehicle",
+                        "physical_vehicle__vehicle",
+                        "physical_vehicle__vehicle__model",
+                        "physical_vehicle__vehicle__model__brand",
+                        "physical_vehicle__location",
+                    ),
+                )
+            )
+            .filter(user_id=user.id)
+            .order_by("-created_at")
         )
-        if user_id:
-            qs = qs.filter(user_id=user_id)
-        if status:
-            if status.lower() == "history":
-                qs = qs.filter(status__status__in=["cancelled", "completed"])
-            else:
-                qs = qs.filter(status__status__iexact=status)
-        return qs
-    
+
+        status_filter = (self.request.query_params.get("status") or "").lower()
+        if status_filter == "history":
+            return base.filter(status__status__in=HISTORY_STATUSES)
+        if status_filter == "active":
+            return base.filter(status__status__in=ACTIVE_STATUSES)
+        return base
+
+    # Serializer dispatch
+
     def get_serializer_class(self):
         """
-        This method fetches the serializer class for this viewset.
-        It is different based on wheter the method is PATCH or not.
-        Use CancelReservationSerializer only for PATCH
-
-        :return: _serializer class_
-        :rtype: django serializer class
+        Use a write serializer only for create; otherwise the read serializer.
         """
-
+        if self.action == "create":
+            return ReservationCreateSerializer
         if self.action == "partial_update":
             return CancelReservationSerializer
         return ReservationSerializer
 
+    # Create (PENDING_PAYMENT)
+    def create(self, request, *args, **kwargs):
+        """
+        Create a reservation in PENDING_PAYMENT with a short hold.
+        Returns the canonical read shape.
+        """
+        write_ser = self.get_serializer(data=request.data, context={"request": request})
+        write_ser.is_valid(raise_exception=True)
+        reservation = write_ser.save()  # ReservationCreateSerializer.create()
+
+        read_ser = ReservationSerializer(reservation, context={"request": request})
+        headers = self.get_success_headers(read_ser.data)
+        return Response(read_ser.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    # Quote (no writing)
+    @action(detail=False, methods=["post"], url_path="quote")
+    def quote(self, request):
+        """
+        POST /api/user_reservations/quote
+        Body: { "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "vehicle_ids": [..] }
+        Returns {"days", "total", "lines":[...] } WITHOUT creating a reservation.
+        """
+        tmp = ReservationCreateSerializer(
+            data=request.data, context={"request": request}
+        )
+        tmp.is_valid(raise_exception=True)
+
+        start = tmp.validated_data["start_date"]
+        end = tmp.validated_data["end_date"]
+        ids = tmp.validated_data["vehicle_ids"]
+        days = (end - start).days
+
+        units = list(
+            PhysicalVehicle.objects.select_related(
+                "vehicle", "vehicle__model", "vehicle__model__brand"
+            ).filter(id__in=ids)
+        )
+
+        # Simple price preview
+        total = sum(u.vehicle.price_per_day * days for u in units)
+        lines = [
+            {
+                "physical_vehicle_id": u.id,
+                "brand": u.vehicle.model.brand.brand_name,
+                "model": u.vehicle.model.model_name,
+                "day_price": str(u.vehicle.price_per_day),
+                "days": days,
+                "line_total": str(u.vehicle.price_per_day * days),
+            }
+            for u in units
+        ]
+        return Response({"days": days, "total": str(total), "lines": lines})
+
+    # Cancel (PATCH)
+
     def partial_update(self, request, *args, **kwargs):
         """
-        This method handles the PATCH request to update a reservation status.
-        It only allows changing the status to "cancelled".
-
-
-        :param request: _request object_
-        :type request: HttpRequest
-        :return: _response object_
-        :rtype: HttpResponse
+        Only allow a user to cancel their own reservation,
+        and only from allowed states.
         """
-
-        serializer = CancelReservationSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        new_status = serializer.validated_data["status"]
-        if new_status.lower() != "cancelled":
+        reservation = self.get_object()
+
+        # ownership check
+        if reservation.user_id != request.user.id:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+
+        # transition rules allow cancel from PENDING_PAYMENT or CONFIRMED
+        current = (reservation.status.status or "").upper()
+        if current not in {"PENDING_PAYMENT", "CONFIRMED"}:
             return Response(
-                {"detail": "You can only change status to 'cancelled'."},
-                status=status.HTTP_400_BAD_REQUEST
+                {"detail": f"Cannot cancel from status '{current}'."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        reservation = self.get_object()
-        cancelled_status = ReservationStatus.objects.get(status__iexact="cancelled")
-        reservation.status = cancelled_status
+        # Apply transition
+        reservation.status_id = reservation.status.__class__.objects.get(
+            status__iexact="cancelled"
+        ).id
         reservation.save(update_fields=["status"])
 
-        return Response(self.get_serializer(reservation).data)
-
+        return Response(
+            ReservationSerializer(reservation).data, status=status.HTTP_200_OK
+        )

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Reservation Status Update</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+      }
+      .header {
+        background-color: #28a745;
+        color: #fff;
+        padding: 10px;
+      }
+      .content {
+        padding: 20px;
+      }
+      .status-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        background: #f9f9f9;
+      }
+      .footer {
+        font-size: 12px;
+        color: #888;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h2>Reservation Status Changed</h2>
+    </div>
+    <div class="content">
+      <p>Hi {{ user.first_name|default:user.username }},</p>
+
+      <p>
+        Your reservation (ID: <strong>{{ reservation.id }}</strong>) status has
+        been updated:
+      </p>
+      <div class="status-box">
+        <p><strong>From:</strong> {{ old_status }}</p>
+        <p><strong>To:</strong> {{ new_status }}</p>
+      </div>
+
+      <h3>Vehicles</h3>
+      <ul>
+        {% for v in vehicles %}
+        <li>{{ v }}</li>
+        {% empty %}
+        <li>No vehicles attached</li>
+        {% endfor %}
+      </ul>
+
+      <p>If you have any questions, feel free to reply to this email.</p>
+    </div>
+    <div class="footer">
+      Vehicle Reservation System &copy; {{ reservation.updated_at.year }}
+    </div>
+  </body>
+</html>

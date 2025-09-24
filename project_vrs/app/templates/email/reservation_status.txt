@@ -1,0 +1,8 @@
+Hi {{ user.first_name|default:user.username }},
+
+Your reservation (ID: {{ reservation.id }}) changed status:
+From: {{ old_status }}
+To:   {{ new_status }}
+
+Vehicles:
+{% for v in vehicles %}- {{ v }}{% empty %}- (no vehicles listed){% endfor %}
