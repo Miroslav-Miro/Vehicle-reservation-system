@@ -1,0 +1,60 @@
+/* ================================
+   VEHICLE DETAIL PAGE
+================================ */
+@dark: #2C2A4A;
+@mid: #4F518C;
+@soft: #907AD6;
+@ink: #ffffff;
+@muted: #cfd0df;
+
+.vehicle-detail {
+    background: @dark;
+    padding: 2.5rem 0;
+
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 1.4rem;
+        text-align: center;
+        color: @ink;
+    }
+
+    .specs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+
+        div {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            font-size: 1.05rem;
+            color: @ink;
+            text-align: center;
+
+            strong {
+                font-weight: 600;
+                color: @soft;
+            }
+        }
+    }
+
+    .availability {
+        text-align: center;
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+        color: @muted;
+
+        strong {
+            color: @ink;
+        }
+    }
+
+    .btn {
+        display: block;
+        margin: 0 auto;
+        min-width: 220px;
+        font-size: 1.1rem;
+    }
+}

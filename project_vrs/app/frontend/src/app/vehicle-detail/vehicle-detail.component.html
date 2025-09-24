@@ -1,0 +1,25 @@
+<section class="section container vehicle-detail" *ngIf="detail; else loading">
+    <h2>{{ detail.brand }} {{ detail.model }}</h2>
+
+    <div class="specs">
+        <div>Type: <strong>{{ detail.vehicle_type }}</strong></div>
+        <div>Engine: <strong>{{ detail.engine_type }}</strong></div>
+        <div>Seats: <strong>{{ detail.seats }}</strong></div>
+        <div>Price: <strong>€{{ detail.price_per_day }}</strong> / day</div>
+    </div>
+
+    <div class="availability">
+        <strong>Available units: {{ detail.available_count }}</strong>
+    </div>
+
+    <button class="btn btn--primary" [disabled]="detail.available_count === 0">
+        Reserve this car
+    </button>
+</section>
+
+<ng-template #loading>
+    <section class="section container vehicle-detail">
+        <p *ngIf="!errorMsg">Loading vehicle…</p>
+        <p *ngIf="errorMsg" class="form-error">{{ errorMsg }}</p>
+    </section>
+</ng-template>

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import EngineType, Model, Vehicle, VehicleType, Brand, PhysicalVehicle
+from ..models import EngineType, Model, Vehicle, VehicleType, Brand, PhysicalVehicle, Location
 
 
 class VehicleSerializer(serializers.ModelSerializer):
@@ -280,3 +280,18 @@ class PhysicalVehicleSerializer(serializers.ModelSerializer):
         if not cleaned:
             raise serializers.ValidationError("Car plate cannot be empty.")
         return cleaned
+    
+class LocationSerializer(serializers.ModelSerializer):
+    """
+    Locations details.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
+    class Meta:
+        """
+        City name (location_name) and address.
+        """
+
+        model = Location
+        fields = ['location_name', 'address']

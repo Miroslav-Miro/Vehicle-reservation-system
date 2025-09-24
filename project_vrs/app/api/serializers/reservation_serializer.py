@@ -146,7 +146,7 @@ class LocationSerializer(serializers.ModelSerializer):
         """
         City name (location_name) and address.
         """
-
+        ref_name = "LocationReservations"
         model = Location
         fields = ["id", "location_name", "address"]
 
