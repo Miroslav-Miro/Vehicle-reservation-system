@@ -26,13 +26,18 @@
             <!-- start: input + small clear -->
             <div class="field-with-clear">
                 <input class="control--sm" type="datetime-local" [(ngModel)]="filters.start" name="start" />
-                <button type="button" class="clear clear--xs" (click)="filters.start = ''">×</button>
             </div>
+
+            <select name="location_id" class="control--sm">
+                <option [ngValue]="null">Any location</option>
+                <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc.id">
+                    {{ loc.location_name }} — {{ loc.address }}
+                </option>
+            </select>
 
             <!-- end: input + small clear -->
             <div class="field-with-clear">
                 <input class="control--sm" type="datetime-local" [(ngModel)]="filters.end" name="end" />
-                <button type="button" class="clear clear--xs" (click)="filters.end = ''">×</button>
             </div>
 
             <button class="btn btn--primary btn--sm" type="submit">Search</button>
@@ -43,7 +48,7 @@
         </div>
 
         <!-- Optional Filters -->
-        <div class="quick-search quick-search--compact">
+        <div *ngIf="showExtraFilters" class="quick-search quick-search--compact">
             <!-- Brand -->
             <div class="select-wrap">
                 <select class="control--sm" [(ngModel)]="filters.brand_id" (change)="onBrandChange()" name="brand_id">
@@ -57,7 +62,8 @@
 
             <!-- Model -->
             <div class="select-wrap">
-                <select class="control--sm" [(ngModel)]="filters.model_id" name="model_id" [disabled]="!models.length">
+                <select class="control--sm" [(ngModel)]="filters.model_id" name="model_id" [disabled]="!models.length"
+                    (ngModelChange)="onModelChange()">
                     <option [ngValue]="null">Any model</option>
                     <option *ngFor="let model of models" [ngValue]="model.id">
                         {{ model.model_name }}
@@ -92,21 +98,24 @@
             </div>
         </div>
 
-        <!-- Clear ALL -->
-
-
-        <div class="quick-search quick-search--compact mt-6">
+        <!-- Extra: price & seats -->
+        <div *ngIf="showExtraFilters" class="quick-search quick-search--compact mt-6">
             <input class="control--sm" type="number" [(ngModel)]="filters.price_min" name="price_min"
-                placeholder="Min Price" />
+                placeholder="Min Price" (ngModelChange)="onNumericFilterChange('price_min', $event)" />
+
             <input class="control--sm" type="number" [(ngModel)]="filters.price_max" name="price_max"
-                placeholder="Max Price" />
+                placeholder="Max Price" (ngModelChange)="onNumericFilterChange('price_max', $event)" />
+
             <input class="control--sm" type="number" [(ngModel)]="filters.seats_min" name="seats_min"
-                placeholder="Min Seats" />
+                placeholder="Min Seats" (ngModelChange)="onNumericFilterChange('seats_min', $event)" />
+
             <input class="control--sm" type="number" [(ngModel)]="filters.seats_max" name="seats_max"
-                placeholder="Max Seats" />
+                placeholder="Max Seats" (ngModelChange)="onNumericFilterChange('seats_max', $event)" />
         </div>
 
-        <button type="button" class="btn btn--ghost btn--sm mt-6" (click)="clearAll()">Clear all filters</button>
+        <button *ngIf="showExtraFilters" type="button" class="btn btn--ghost btn--sm mt-6" (click)="clearAll()">Clear
+            all filters</button>
+
     </div>
 </section>
 

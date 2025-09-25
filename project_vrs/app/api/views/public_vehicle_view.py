@@ -188,9 +188,18 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
         if price_max:
             qs = qs.filter(vehicle__price_per_day__lte=price_max)
         if seats_min:
-            qs = qs.filter(vehicle__amount_seats__gte=seats_min)
+            try:
+                seats_min_val = int(seats_min)
+                qs = qs.filter(vehicle__amount_seats__gte=seats_min_val)
+            except ValueError:
+                return Response({"detail": "seats_min must be an integer."}, status=400)
+
         if seats_max:
-            qs = qs.filter(vehicle__amount_seats__lte=seats_max)
+            try:
+                seats_max_val = int(seats_max)
+                qs = qs.filter(vehicle__amount_seats__lte=seats_max_val)
+            except ValueError:
+                return Response({"detail": "seats_max must be an integer."}, status=400)
 
         
         
