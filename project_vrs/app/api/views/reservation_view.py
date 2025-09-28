@@ -1,14 +1,22 @@
+from math import ceil
+from decimal import Decimal
+
+from django.db import transaction
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Prefetch
+from django.utils.dateparse import parse_date
 
 from ..custom_permissions.mixed_role_permissions import RoleRequired
 from ..models import (
     Reservation,
     PhysicalVehicleReservation,
     PhysicalVehicle,
+    Location,
+    ReservationStatus
 )
 from ..serializers.reservation_serializer import (
     ReservationSerializer,
@@ -18,8 +26,8 @@ from ..serializers.reservation_serializer import (
 
 
 # Allowed status
-HISTORY_STATUSES = {"CANCELLED", "COMPLETED", "NO_SHOW", "FAILED_PAYMENT"}
-ACTIVE_STATUSES = {"PENDING_PAYMENT", "CONFIRMED", "ACTIVE"}
+HISTORY_STATUSES = {"cancelled", "completed", "no_show", "failed_payment"}
+ACTIVE_STATUSES = {"pending", "confirmed", "active"}
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
@@ -83,18 +91,106 @@ class ReservationViewSet(viewsets.ModelViewSet):
         return ReservationSerializer
 
     # Create (PENDING_PAYMENT)
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         """
-        Create a reservation in PENDING_PAYMENT with a short hold.
-        Returns the canonical read shape.
+        Accepts payload:
+        {
+          "start": "...ISO...",
+          "end": "...ISO...",
+          "start_location_id": 1,
+          "end_location_id": 2,   // optional, defaults to start_location_id
+          "lines": [{ "vehicle_id": 7, "qty": 2 }, ...]
+        }
         """
-        write_ser = self.get_serializer(data=request.data, context={"request": request})
+        write_ser = ReservationCreateSerializer(data=request.data)
         write_ser.is_valid(raise_exception=True)
-        reservation = write_ser.save()  # ReservationCreateSerializer.create()
+        data = write_ser.validated_data
 
-        read_ser = ReservationSerializer(reservation, context={"request": request})
-        headers = self.get_success_headers(read_ser.data)
-        return Response(read_ser.data, status=status.HTTP_201_CREATED, headers=headers)
+        start = data["start"]
+        end = data["end"]
+        pickup_id = data["start_location_id"]
+        dropoff_id = data.get("end_location_id") or pickup_id
+        lines = data["lines"]
+
+        # locations
+        pickup = Location.objects.filter(pk=pickup_id).first()
+        if not pickup:
+            return Response({"detail": "Invalid start_location_id."}, status=400)
+        dropoff = Location.objects.filter(pk=dropoff_id).first()
+        if not dropoff:
+            return Response({"detail": "Invalid end_location_id."}, status=400)
+
+        # merge duplicate conceptual vehicles
+        qty_by_vid = {}
+        for line in lines:
+            vid = int(line["vehicle_id"])
+            qty_by_vid[vid] = qty_by_vid.get(vid, 0) + int(line["qty"])
+
+        # choose physical units at pickup location, excluding overlaps
+        chosen_units = []
+        BLOCKING_STATUSES = {"pending", "confirmed", "active"}
+        for vid, qty in qty_by_vid.items():
+            qs = (
+                PhysicalVehicle.objects
+                .filter(vehicle_id=vid, location_id=pickup_id)
+                .exclude(
+                    physicalvehiclereservation__reservation__start_date__lt=end,
+                    physicalvehiclereservation__reservation__end_date__gt=start,
+                    physicalvehiclereservation__reservation__status__status__in=BLOCKING_STATUSES,
+                )
+                .select_for_update(skip_locked=True)
+                .order_by("id")
+            )
+
+            available = list(qs.values_list("id", flat=True))
+            if len(available) < qty:
+                return Response(
+                    {
+                        "detail": (
+                            f"Need {qty}, only {len(available)} units of vehicle {vid} "
+                            f"free at location {pickup_id} between {start.isoformat()} and {end.isoformat()}."
+                        )
+                    },
+                    status=400,
+                )
+
+            # fetch the actual unit rows for attaching
+            chosen_units.extend(list(PhysicalVehicle.objects.filter(id__in=available[:qty])))
+
+        # status
+        try:
+            pending = ReservationStatus.objects.get(status__iexact="pending")
+        except ReservationStatus.DoesNotExist:
+            return Response({"detail": "Missing ReservationStatus 'pending'."}, status=500)
+
+        # compute rental days (ceil to whole days, min 1)
+        seconds = (end - start).total_seconds()
+        days = max(1, ceil(seconds / 86400.0))
+
+        # create reservation
+        res = Reservation.objects.create(
+            user=request.user,
+            start_date=start,
+            end_date=end,
+            status=pending,
+            pickup_location=pickup,
+            dropoff_location=dropoff,
+            total_price=Decimal("0.00"),
+        )
+
+        # attach items & compute total
+        total = Decimal("0.00")
+        # we need unit rows with vehicle fk; they were fetched above
+        for u in chosen_units:
+            PhysicalVehicleReservation.objects.create(reservation=res, physical_vehicle=u)
+            total += u.vehicle.price_per_day * days
+
+        res.total_price = total
+        res.save(update_fields=["total_price"])
+
+        read_ser = ReservationSerializer(res, context={"request": request})
+        return Response(read_ser.data, status=status.HTTP_201_CREATED)
 
     # Quote (no writing)
     @action(detail=False, methods=["post"], url_path="quote")
@@ -151,20 +247,20 @@ class ReservationViewSet(viewsets.ModelViewSet):
         if reservation.user_id != request.user.id:
             return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
-        # transition rules allow cancel from PENDING_PAYMENT or CONFIRMED
-        current = (reservation.status.status or "").upper()
-        if current not in {"PENDING_PAYMENT", "CONFIRMED"}:
+        # transition rules: allow cancel from pending or confirmed
+        current = (reservation.status.status or "").lower()
+        if current not in {"pending", "confirmed"}:
             return Response(
                 {"detail": f"Cannot cancel from status '{current}'."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Apply transition
-        reservation.status_id = reservation.status.__class__.objects.get(
-            status__iexact="cancelled"
-        ).id
+        cancel_status = ReservationStatus.objects.get(status__iexact="cancelled")
+        reservation.status = cancel_status
         reservation.save(update_fields=["status"])
 
         return Response(
-            ReservationSerializer(reservation).data, status=status.HTTP_200_OK
+            ReservationSerializer(reservation, context={"request": request}).data,
+            status=status.HTTP_200_OK,
         )

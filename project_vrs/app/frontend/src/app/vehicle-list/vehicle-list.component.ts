@@ -115,7 +115,7 @@ export class VehicleListComponent implements OnInit {
       end_location_id: this.filters.end_location_id ?? this.filters.location_id, // <-- here
       lines,
     };
-    this.http.post('http://localhost:8000/api/public/reservations/', payload).subscribe({
+    this.http.post('http://localhost:8000/api/user_reservations/', payload).subscribe({
       next: () => { this.clearBasket(); this.sidebarOpen = false; this.saveSidebarToStorage(); alert('Reservation submitted!'); },
       error: (err) => alert(err?.error?.detail || 'Failed to reserve.'),
     });
