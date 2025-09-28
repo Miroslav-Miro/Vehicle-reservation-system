@@ -26,8 +26,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
     """
     User-facing reservations API.
     """
-
-    permission_classes = [IsAuthenticated, RoleRequired("user")]
+    
     serializer_class = ReservationSerializer
 
     def get_permissions(self):
