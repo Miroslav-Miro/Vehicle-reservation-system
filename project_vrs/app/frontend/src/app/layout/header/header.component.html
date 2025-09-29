@@ -1,8 +1,9 @@
 <header class="header">
-  <div class="logo">MyApp</div>
+  <div class="logo">Rent a car</div>
 
   <nav class="nav">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Home</a>
+    <a routerLink="/vehicles" routerLinkActive="active">Vehicles</a>
       <div class="dropdown">
         <a class="dropbtn">Reservations ▾</a>
         <div class="dropdown-content">
@@ -10,6 +11,7 @@
           <a routerLink="/reservations/history" routerLinkActive="active">Reservation History</a>
         </div>
       </div>
+      <a routerLink="/notifications" routerLinkActive="active">Notifications</a>
 
     <!-- Show Login/Register when NOT logged in -->
     <ng-container *ngIf="!(auth.isAuthed$ | async); else authed">

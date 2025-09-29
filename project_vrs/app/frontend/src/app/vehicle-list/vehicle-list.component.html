@@ -1,0 +1,212 @@
+<!-- HERO -->
+<section class="hero">
+    <div class="hero__bg">
+        <span class="blob blob--1"></span>
+        <span class="blob blob--2"></span>
+    </div>
+
+    <div class="hero__content container">
+        <h1 class="hero__title">
+            Find your ride.
+            <span>Search & book instantly.</span>
+        </h1>
+        <p class="hero__subtitle">
+            Filter by location, brand, type, and more. Get only cars available in your dates.
+        </p>
+
+        <!-- Search Form -->
+        <form class="quick-search quick-search--tight" (ngSubmit)="searchVehicles()">
+            <!-- Start location (resets basket on change) -->
+            <select [(ngModel)]="filters.location_id" (ngModelChange)="onStartLocationChange($event)" name="location_id"
+                class="control--sm">
+                <option [ngValue]="null">Any location</option>
+                <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc.id">
+                    {{ loc.location_name }} — {{ loc.address }}
+                </option>
+            </select>
+
+            <!-- start: input -->
+            <div class="field-with-clear">
+                <input class="control--sm" type="datetime-local" [(ngModel)]="filters.start" name="start"
+                    (ngModelChange)="onStartDateChange()" />
+            </div>
+
+            <!-- end location (kept as in your original HTML; not bound, if needed bind later) -->
+            <!-- End location -->
+            <select [(ngModel)]="filters.end_location_id" (ngModelChange)="onEndLocationChange($event)"
+                name="end_location_id" class="control--sm">
+                <option [ngValue]="null">Any location</option>
+                <option *ngFor="let loc of (locations$ | async)" [ngValue]="loc.id">
+                    {{ loc.location_name }} — {{ loc.address }}
+                </option>
+            </select>
+
+
+            <!-- end: input -->
+            <div class="field-with-clear">
+                <input class="control--sm" type="datetime-local" [(ngModel)]="filters.end" name="end"
+                    (ngModelChange)="onEndDateChange()" />
+            </div>
+
+            <button class="btn btn--primary btn--sm" type="submit">Search</button>
+        </form>
+
+        <div *ngIf="errorMsg" class="form-error" style="margin-top:.4rem;">
+            {{ errorMsg }}
+        </div>
+
+        <!-- Optional Filters -->
+        <div *ngIf="showExtraFilters" class="quick-search quick-search--compact">
+            <!-- Brand -->
+            <div class="select-wrap">
+                <select class="control--sm" [(ngModel)]="filters.brand_id" (change)="onBrandChange()" name="brand_id">
+                    <option [ngValue]="null">Any brand</option>
+                    <option *ngFor="let brand of brands" [ngValue]="brand.id">
+                        {{ brand.brand_name }}
+                    </option>
+                </select>
+                <button type="button" class="clear clear--xs" (click)="clearBrand()">×</button>
+            </div>
+
+            <!-- Model -->
+            <div class="select-wrap">
+                <select class="control--sm" [(ngModel)]="filters.model_id" name="model_id" [disabled]="!models.length"
+                    (ngModelChange)="onModelChange()">
+                    <option [ngValue]="null">Any model</option>
+                    <option *ngFor="let model of models" [ngValue]="model.id">
+                        {{ model.model_name }}
+                    </option>
+                </select>
+                <button type="button" class="clear clear--xs" (click)="clearModel()"
+                    [disabled]="!models.length">×</button>
+            </div>
+
+            <!-- Vehicle Type -->
+            <div class="select-wrap">
+                <select class="control--sm" [(ngModel)]="selectedVehicleTypeId" (change)="onVehicleTypeChange()"
+                    name="vehicle_type_id">
+                    <option [ngValue]="null">Any type</option>
+                    <option *ngFor="let t of vehicleTypes" [ngValue]="t.id">
+                        {{ t.vehicle_type }}
+                    </option>
+                </select>
+                <button type="button" class="clear clear--xs" (click)="clearVehicleType()">×</button>
+            </div>
+
+            <!-- Engine Type -->
+            <div class="select-wrap">
+                <select class="control--sm" [(ngModel)]="selectedEngineTypeId" (change)="onEngineTypeChange()"
+                    name="engine_type_id">
+                    <option [ngValue]="null">Any engine</option>
+                    <option *ngFor="let e of engineTypes" [ngValue]="e.id">
+                        {{ e.engine_type }}
+                    </option>
+                </select>
+                <button type="button" class="clear clear--xs" (click)="clearEngineType()">×</button>
+            </div>
+        </div>
+
+        <!-- Extra: price & seats -->
+        <div *ngIf="showExtraFilters" class="quick-search quick-search--compact mt-6">
+            <input class="control--sm" type="number" [(ngModel)]="filters.price_min" name="price_min"
+                placeholder="Min Price" (ngModelChange)="onNumericFilterChange('price_min', $event)" />
+
+            <input class="control--sm" type="number" [(ngModel)]="filters.price_max" name="price_max"
+                placeholder="Max Price" (ngModelChange)="onNumericFilterChange('price_max', $event)" />
+
+            <input class="control--sm" type="number" [(ngModel)]="filters.seats_min" name="seats_min"
+                placeholder="Min Seats" (ngModelChange)="onNumericFilterChange('seats_min', $event)" />
+
+            <input class="control--sm" type="number" [(ngModel)]="filters.seats_max" name="seats_max"
+                placeholder="Max Seats" (ngModelChange)="onNumericFilterChange('seats_max', $event)" />
+        </div>
+
+        <button *ngIf="showExtraFilters" type="button" class="btn btn--ghost btn--sm mt-6" (click)="clearAll()">
+            Clear all filters
+        </button>
+    </div>
+</section>
+
+<!-- RESULTS -->
+<section class="section container" *ngIf="vehicles.length > 0">
+    <div class="section__head">
+        <h2>Available vehicles</h2>
+    </div>
+
+    <div class="cards">
+        <article class="card" *ngFor="let v of vehicles">
+            <div class="card__media">
+                <div class="img-skeleton">{{ v.brand }} {{ v.model }}</div>
+            </div>
+            <div class="card__body">
+                <h3>{{ v.brand }} {{ v.model }}</h3>
+                <p>
+                    {{ v.engine_type }} • {{ v.seats }} seats • {{ v.vehicle_type }}
+                </p>
+                <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
+                <div class="meta">Available: {{ v.available_count }}</div>
+
+                <a class="btn btn--tiny" [routerLink]="['/vehicles', v.vehicle_id]" [queryParams]="{
+          location_id: filters.location_id || null,
+          start: filters.start || null,
+          end: filters.end || null
+        }">
+                    View
+                </a>
+
+                <button class="btn btn--tiny btn--primary" (click)="addToBasket(v)" [disabled]="isMaxed(v)">
+                    Select
+                </button>
+            </div>
+        </article>
+    </div>
+</section>
+
+<!-- SIDEBAR -->
+<div class="basket-sidebar" [class.open]="sidebarOpen">
+    <div class="basket-header">
+        <h3>Your Basket ({{ basketCount }})</h3>
+        <button class="close-btn" type="button" (click)="toggleSidebar(false)">×</button>
+    </div>
+
+    <div class="basket-content" *ngIf="basketItems.length > 0; else emptyBasket">
+        <div class="basket-item" *ngFor="let it of basketItems">
+            <div class="info">
+                <strong>{{ it.brand }} {{ it.model }}</strong>
+                <div class="price">€{{ it.price_per_day }} /day</div>
+            </div>
+
+            <div class="qty-controls">
+                <button type="button" (click)="decQty(it)" [disabled]="it.qty <= 1"
+                    aria-label="Decrease quantity">−</button>
+
+                <span>{{ it.qty }}</span>
+
+                <button type="button" (click)="incQty(it)" [disabled]="it.qty >= toInt(it.available_count)"
+                    aria-label="Increase quantity">+</button>
+            </div>
+
+            <div class="qty-hint" *ngIf="it.qty >= toInt(it.available_count)">Max available reached</div>
+
+            <button class="remove-btn" type="button" (click)="removeFromBasket(it.vehicle_id)">Remove</button>
+        </div>
+    </div>
+
+    <ng-template #emptyBasket>
+        <p class="empty">No vehicles selected.</p>
+    </ng-template>
+
+    <div class="basket-footer" *ngIf="basketItems.length > 0">
+        <div class="total">Total: €{{ basketTotal }}</div>
+        <button class="btn btn--primary" type="button" (click)="reserve()">Reserve</button>
+        <button class="btn btn--ghost" type="button" (click)="clearBasket()">Clear</button>
+    </div>
+</div>
+
+<!-- Overlay to close sidebar -->
+<div class="basket-overlay" *ngIf="sidebarOpen" (click)="toggleSidebar(false)"></div>
+
+<!-- Floating Basket Widget -->
+<button class="basket-widget" *ngIf="basketCount > 0" (click)="toggleSidebar()">
+    🛒 {{ basketCount }}
+</button>

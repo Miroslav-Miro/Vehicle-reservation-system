@@ -86,7 +86,8 @@
     border-radius: 14px;
     backdrop-filter: blur(6px);
 
-    input {
+    input,
+    select {
         background: rgba(255, 255, 255, .08);
         border: 1px solid rgba(255, 255, 255, .12);
         color: @ink;
@@ -98,6 +99,13 @@
             color: rgba(255, 255, 255, .6);
         }
     }
+
+    select option {
+        background: @dark;
+        color: @ink;
+        padding: 0.6rem;
+    }
+
 
     @media (max-width: 760px) {
         grid-template-columns: 1fr;
@@ -121,11 +129,11 @@
         }
 
         .link {
-            color: @muted;
+            color: @dark;
             text-decoration: none;
 
             &:hover {
-                color: @ink;
+                color: @mid;
             }
         }
     }
