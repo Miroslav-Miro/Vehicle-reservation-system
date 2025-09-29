@@ -6,6 +6,7 @@ import { RegisterComponent } from './auth/register/register.component';
 import { CurrentReservationsComponent } from './current-reservations/current-reservations.component';
 import { HistoryReservationsComponent } from './history-reservations/history-reservations.component';
 import { VehicleDetailComponent } from './vehicle-detail/vehicle-detail.component';
+import { NotificationSectionComponent } from './notification-section/notification-section.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AdminGuard } from './auth/admin.guard';
 import { ManagerGuard } from './auth/manager.guard';
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'auth/register', component: RegisterComponent, canMatch: [GuestGuard] },
   { path: 'reservations/current',component: CurrentReservationsComponent, canActivate: [AuthGuard]},
   { path: 'reservations/history', component: HistoryReservationsComponent, canActivate: [AuthGuard]},
+  { path: 'notifications', component:NotificationSectionComponent, canActivate: [AuthGuard]},
 
 
   // Protected routes

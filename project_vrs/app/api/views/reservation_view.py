@@ -8,7 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Prefetch
-from django.utils.dateparse import parse_date
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from ..custom_permissions.mixed_role_permissions import RoleRequired
 from ..models import (
@@ -16,20 +17,45 @@ from ..models import (
     PhysicalVehicleReservation,
     PhysicalVehicle,
     Location,
-    ReservationStatus
+    ReservationStatus,
+    Notification
 )
 from ..serializers.reservation_serializer import (
     ReservationSerializer,
     CancelReservationSerializer,
     ReservationCreateSerializer,
 )
+from ..utils.broadcast import broadcast_notification
 
 
 # Allowed status
 HISTORY_STATUSES = {"cancelled", "completed", "no_show", "failed_payment"}
 ACTIVE_STATUSES = {"pending", "confirmed", "active"}
 
+# def broadcast_notification(message, recipient_ids=None, roles=None):
+#     channel_layer = get_channel_layer()
 
+#     # Store in DB
+#     if recipient_ids:
+#         for uid in recipient_ids:
+#             Notification.objects.create(
+#                 recipient_id=uid,
+#                 message=message.get("message") or message.get("action"),
+#                 type=message.get("action"),
+#             )
+
+#     # Live push
+#     if recipient_ids:
+#         for uid in recipient_ids:
+#             async_to_sync(channel_layer.group_send)(
+#                 f"user_{uid}", {"type": "notify", "message": message}
+#             )
+
+#     if roles:
+#         for role in roles:
+#             async_to_sync(channel_layer.group_send)(
+#                 role, {"type": "notify", "message": message}
+#             )
 class ReservationViewSet(viewsets.ModelViewSet):
     """
     User-facing reservations API.
@@ -190,6 +216,15 @@ class ReservationViewSet(viewsets.ModelViewSet):
         res.save(update_fields=["total_price"])
 
         read_ser = ReservationSerializer(res, context={"request": request})
+
+        # Broadcast notification to user and managers
+        payload = {
+            "action": "created",
+            "reservation": read_ser.data,
+            "message": f"Reservation #{res.id} created",
+        }
+        broadcast_notification(payload, user_id=request.user.id, roles=["managers"])
+
         return Response(read_ser.data, status=status.HTTP_201_CREATED)
 
     # Quote (no writing)
@@ -259,6 +294,19 @@ class ReservationViewSet(viewsets.ModelViewSet):
         cancel_status = ReservationStatus.objects.get(status__iexact="cancelled")
         reservation.status = cancel_status
         reservation.save(update_fields=["status"])
+
+        payload = {
+            "action": "cancelled",
+            "reservation": ReservationSerializer(reservation, context={"request": request}).data,
+            "message": f"Reservation #{reservation.id} cancelled",
+        }
+
+        # fire only after the DB row is committed so GET sees it
+        transaction.on_commit(lambda: broadcast_notification(
+            payload,
+            user_id=request.user.id,      # persist for the creator
+            roles=["managers"]            # live fanout to managers (persist for them is optional)
+        ))
 
         return Response(
             ReservationSerializer(reservation, context={"request": request}).data,
