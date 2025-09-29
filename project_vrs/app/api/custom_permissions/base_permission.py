@@ -1,5 +1,6 @@
 from rest_framework.permissions import BasePermission
 
+
 class HasRole(BasePermission):
     """
     Custom permission to only allow users with specific roles to access certain views.
@@ -9,7 +10,7 @@ class HasRole(BasePermission):
     """
 
     def __init__(self, allowed_roles=None):
-        self.allowed_roles = allowed_roles or []
+        self.allowed_roles = [r.lower() for r in (allowed_roles or [])]
 
     def has_permission(self, request, view):
         return (
