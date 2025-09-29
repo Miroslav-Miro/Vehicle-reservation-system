@@ -152,7 +152,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    type = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.recipient}"
 class LoginEvent(models.Model):
     EVENT_TYPES = [
         ("LOGIN_SUCCESS", "Login Success"),

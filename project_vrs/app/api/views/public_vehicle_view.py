@@ -131,7 +131,7 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
             except ValueError as e:
                 return Response({"detail": str(e)}, status=400)
 
-        BLOCKING = ["active"]
+        BLOCKING = ["active","pending"]
 
         # --- build base queryset in 3 scenarios ---
         if location_id and start and end:

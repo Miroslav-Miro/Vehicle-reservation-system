@@ -24,7 +24,7 @@ def seed_initial_data(apps, schema_editor):
         Location.objects.get_or_create(location_name=city, address=address)
 
     # Seed reservation statuses
-    statuses = ["active", "cancelled", "completed"]
+    statuses = ["active", "cancelled", "completed", "no_show", "failed_payment", "pending", "confirmed"]
     for s in statuses:
         ReservationStatus.objects.get_or_create(status=s)
 

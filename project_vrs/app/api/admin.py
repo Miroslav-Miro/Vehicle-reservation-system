@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     Role, User, Brand, Model, EngineType, VehicleType,
-    Vehicle, PhysicalVehicle, ReservationStatus, Reservation, PhysicalVehicleReservation
+    Vehicle, PhysicalVehicle, ReservationStatus, Reservation, PhysicalVehicleReservation,
+    Notification
 )
 
 @admin.register(Role)
@@ -18,6 +19,14 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ("username", "email", "first_name", "last_name")
     ordering = ("username",)
     readonly_fields = ("created_at", "updated_at")
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("id", "recipient", "message", "type", "created_at", "is_read")
+    list_filter = ("is_read", "created_at")
+    search_fields = ("recipient__username", "message", "type")
+    ordering = ("-created_at",)
+    readonly_fields = ("created_at",)
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):

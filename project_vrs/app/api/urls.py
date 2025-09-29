@@ -20,6 +20,7 @@ from .views.public_vehicle_view import (
 )
 from .views.user_view import UserProfileViewSet, AdminUserProfilesViewSet
 from .views.reservation_view import ReservationViewSet
+from .views.notification_view import NotificationViewSet
 
 router = DefaultRouter()
 
@@ -46,6 +47,8 @@ router.register(r"locations_filter", LocationViewSetFiltering, basename="locatio
 router.register(r"brands_models_filter", BrandModelViewSetFiltering, basename="brands_models_filter")
 router.register(r"vehicle_type_filter", VehicleTypeViewSetFiltering, basename="vehicle_type_filter")
 router.register(r"engine_type_filter", EngineTypeViewSetFiltering, basename="engine_type_filter")
+
+router.register(r"notifications", NotificationViewSet, basename="notification")
 
 public_vehicle_list = PublicVehicleAvailabilityViewSet.as_view({"get": "list"})
 public_vehicle_detail = PublicVehicleAvailabilityViewSet.as_view({"get": "retrieve"})
