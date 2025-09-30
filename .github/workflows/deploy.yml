@@ -149,7 +149,22 @@ jobs:
       - name: Fetch SWA deployment token
         id: swa
         run: |
-          TOKEN=$(az staticwebapp secrets list -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.swa_name }} --query properties.apiKey -o tsv)
+          set -euo pipefail
+          RG="${{ steps.tfout.outputs.resource_group }}"
+          SWA="${{ steps.tfout.outputs.swa_name }}"
+          if [ -z "$RG" ] || [ "$RG" = "null" ]; then
+            PROJ="${{ secrets.PROJECT_NAME }}"
+            SAN=$(echo "$PROJ" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')
+            RG="${SAN}-rg"
+          fi
+          if [ -z "$SWA" ] || [ "$SWA" = "null" ]; then
+            SWA=$(az staticwebapp list -g "$RG" --query "[0].name" -o tsv || true)
+          fi
+          if [ -z "$SWA" ] || [ -z "$RG" ]; then
+            echo "Could not determine Static Web App name or resource group." >&2
+            exit 1
+          fi
+          TOKEN=$(az staticwebapp secrets list -g "$RG" -n "$SWA" --query properties.apiKey -o tsv)
           echo "token=$TOKEN" >> $GITHUB_OUTPUT
 
       - name: Deploy Static Web App
