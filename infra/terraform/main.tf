@@ -6,7 +6,8 @@ locals {
   web_name     = "${local.name}-backend"
   worker_name  = "${local.name}-worker"
   redis_name   = substr("${local.name}-redis", 0, 63)
-  pg_name      = substr("${local.name}-pg", 0, 60)
+  # Make PG server name unique across regions, to avoid conflicts when moving regions
+  pg_name      = substr("${local.name}-pg${var.pg_location != "" ? "-" : ""}${lower(replace(var.pg_location, "[^a-z0-9]", ""))}", 0, 60)
   swa_name     = "${local.name}-frontend"
 }
 
