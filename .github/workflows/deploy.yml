@@ -29,58 +29,100 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get ACR Login Server
-        id: acr
+      - name: Locate Terraform remote state
+        id: tfstate
         run: |
-          ACR_LOGIN_SERVER=$(az acr show -n ${{ secrets.ACR_NAME }} --query loginServer -o tsv)
-          echo "login_server=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          PROJ="${{ secrets.PROJECT_NAME }}"
+          STATE_RG="${PROJ}-tfstate-rg"
+          SA=$(az storage account list -g "$STATE_RG" --query "[0].name" -o tsv)
+          echo "state_rg=$STATE_RG" >> $GITHUB_OUTPUT
+          echo "state_sa=$SA" >> $GITHUB_OUTPUT
+          echo "state_container=tfstate" >> $GITHUB_OUTPUT
+          echo "state_key=${PROJ}.tfstate" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init (read outputs)
+        working-directory: infra/terraform
+        env:
+          ARM_USE_OIDC: true
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ steps.tfstate.outputs.state_rg }}" \
+            -backend-config="storage_account_name=${{ steps.tfstate.outputs.state_sa }}" \
+            -backend-config="container_name=${{ steps.tfstate.outputs.state_container }}" \
+            -backend-config="key=${{ steps.tfstate.outputs.state_key }}"
+
+      - name: Read Terraform outputs
+        id: tfout
+        working-directory: infra/terraform
+        run: |
+          OUT=$(terraform output -json)
+          echo "$OUT" | jq -r '.acr_login_server.value' | sed 's/\r$//' > /tmp/acr_server
+          echo "$OUT" | jq -r '.acr_name.value' | sed 's/\r$//' > /tmp/acr_name
+          echo "$OUT" | jq -r '.resource_group.value' | sed 's/\r$//' > /tmp/rg
+          echo "$OUT" | jq -r '.backend_webapp_name.value' | sed 's/\r$//' > /tmp/backend
+          echo "$OUT" | jq -r '.worker_webapp_name.value' | sed 's/\r$//' > /tmp/worker
+          echo "acr_server=$(cat /tmp/acr_server)" >> $GITHUB_OUTPUT
+          echo "acr_name=$(cat /tmp/acr_name)" >> $GITHUB_OUTPUT
+          echo "resource_group=$(cat /tmp/rg)" >> $GITHUB_OUTPUT
+          echo "backend_name=$(cat /tmp/backend)" >> $GITHUB_OUTPUT
+          echo "worker_name=$(cat /tmp/worker)" >> $GITHUB_OUTPUT
 
       - name: ACR Login
-        run: az acr login -n ${{ secrets.ACR_NAME }}
+        run: az acr login -n ${{ steps.tfout.outputs.acr_name }}
 
       - name: Docker Build and Push (backend)
         env:
-          ACR: ${{ steps.acr.outputs.login_server }}
+          ACR: ${{ steps.tfout.outputs.acr_server }}
         run: |
           docker build -f project_vrs/app/Dockerfile.backend -t $ACR/vrs-backend:${{ github.sha }} project_vrs/app
           docker push $ACR/vrs-backend:${{ github.sha }}
 
       - name: Point backend Web App to new image
         env:
-          ACR: ${{ steps.acr.outputs.login_server }}
+          ACR: ${{ steps.tfout.outputs.acr_server }}
         run: |
           az webapp config container set \
-            -g ${{ secrets.RESOURCE_GROUP }} \
-            -n ${{ secrets.BACKEND_WEBAPP_NAME }} \
+            -g ${{ steps.tfout.outputs.resource_group }} \
+            -n ${{ steps.tfout.outputs.backend_name }} \
             --docker-custom-image-name $ACR/vrs-backend:${{ github.sha }} \
             --docker-registry-server-url https://$ACR
           # Ensure registry creds are present (from ACR admin)
-          az webapp config appsettings set -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.BACKEND_WEBAPP_NAME }} --settings \
-            DOCKER_REGISTRY_SERVER_URL=https://${{ steps.acr.outputs.login_server }} \
-            DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.ACR_USERNAME }} \
-            DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.ACR_PASSWORD }}
-          az webapp restart -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.BACKEND_WEBAPP_NAME }}
+          CREDS=$(az acr credential show -n ${{ steps.tfout.outputs.acr_name }})
+          USER=$(echo "$CREDS" | jq -r '.username')
+          PASS=$(echo "$CREDS" | jq -r '.passwords[0].value')
+          az webapp config appsettings set -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.backend_name }} --settings \
+            DOCKER_REGISTRY_SERVER_URL=https://${{ steps.tfout.outputs.acr_server }} \
+            DOCKER_REGISTRY_SERVER_USERNAME=$USER \
+            DOCKER_REGISTRY_SERVER_PASSWORD=$PASS
+          az webapp restart -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.backend_name }}
 
       - name: Point worker Web App to new image
         if: always()
         env:
-          ACR: ${{ steps.acr.outputs.login_server }}
+          ACR: ${{ steps.tfout.outputs.acr_server }}
         run: |
           az webapp config container set \
-            -g ${{ secrets.RESOURCE_GROUP }} \
-            -n ${{ secrets.WORKER_WEBAPP_NAME }} \
+            -g ${{ steps.tfout.outputs.resource_group }} \
+            -n ${{ steps.tfout.outputs.worker_name }} \
             --docker-custom-image-name $ACR/vrs-backend:${{ github.sha }} \
             --docker-registry-server-url https://$ACR
-          az webapp config appsettings set -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.WORKER_WEBAPP_NAME }} --settings \
-            DOCKER_REGISTRY_SERVER_URL=https://${{ steps.acr.outputs.login_server }} \
-            DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.ACR_USERNAME }} \
-            DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.ACR_PASSWORD }}
-          az webapp restart -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.WORKER_WEBAPP_NAME }}
+          CREDS=$(az acr credential show -n ${{ steps.tfout.outputs.acr_name }})
+          USER=$(echo "$CREDS" | jq -r '.username')
+          PASS=$(echo "$CREDS" | jq -r '.passwords[0].value')
+          az webapp config appsettings set -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.worker_name }} --settings \
+            DOCKER_REGISTRY_SERVER_URL=https://${{ steps.tfout.outputs.acr_server }} \
+            DOCKER_REGISTRY_SERVER_USERNAME=$USER \
+            DOCKER_REGISTRY_SERVER_PASSWORD=$PASS
+          az webapp restart -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.worker_name }}
 
       - name: Compute Backend URL
         id: backend_url
         run: |
-          HOST=$(az webapp show -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.BACKEND_WEBAPP_NAME }} --query defaultHostName -o tsv)
+          HOST=$(az webapp show -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.backend_name }} --query defaultHostName -o tsv)
           echo "host=$HOST" >> $GITHUB_OUTPUT
 
   frontend:
