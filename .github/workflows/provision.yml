@@ -101,6 +101,25 @@ jobs:
           if az acr show -g "$RG" -n "$ACR_NAME" >/dev/null 2>&1; then
             terraform import -no-color azurerm_container_registry.acr "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.ContainerRegistry/registries/$ACR_NAME" || true
           fi
+          # Import App Service Plan if it already exists
+          PLAN_NAME="${PROJ}-plan"
+          if az appservice plan show -g "$RG" -n "$PLAN_NAME" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_service_plan.plan "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.Web/serverFarms/$PLAN_NAME" || true
+          fi
+          # Import Static Web App if it already exists
+          SWA_NAME="${PROJ}-frontend"
+          if az staticwebapp show -g "$RG" -n "$SWA_NAME" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_static_site.frontend "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.Web/staticSites/$SWA_NAME" || true
+          fi
+          # Import Linux Web Apps if they already exist
+          BE_NAME="${PROJ}-backend"
+          if az webapp show -g "$RG" -n "$BE_NAME" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_linux_web_app.backend "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.Web/sites/$BE_NAME" || true
+          fi
+          WK_NAME="${PROJ}-worker"
+          if az webapp show -g "$RG" -n "$WK_NAME" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_linux_web_app.worker "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.Web/sites/$WK_NAME" || true
+          fi
 
       - name: Terraform Apply
         id: tfapply
