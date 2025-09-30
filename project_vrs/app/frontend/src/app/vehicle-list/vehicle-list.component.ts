@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
+import { apiBase } from '../shared/api';
 import { debounceTime } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -72,7 +73,7 @@ payAndReserve() {
   this.isPaying = true;
   this.payError = '';
 
-  this.http.post('http://localhost:8000/api/mock_payments/validate/', this.payment)
+  this.http.post(`${apiBase()}/mock_payments/validate/`, this.payment)
     .subscribe({
       next: () => {
         this.isPaying = false;
@@ -170,7 +171,7 @@ payAndReserve() {
       end_location_id: this.filters.end_location_id ?? this.filters.location_id, // <-- here
       lines,
     };
-    this.http.post('http://localhost:8000/api/user_reservations/', payload).subscribe({
+    this.http.post(`${apiBase()}/user_reservations/`, payload).subscribe({
       next: () => { this.clearBasket(); this.sidebarOpen = false; this.saveSidebarToStorage(); alert('Reservation submitted!'); },
       error: (err) => alert(err?.error?.detail || 'Failed to reserve.'),
     });
@@ -464,7 +465,7 @@ payAndReserve() {
     }
 
     this.http
-      .get<any[]>('http://localhost:8000/api/public/vehicles/available/', { params })
+      .get<any[]>(`${apiBase()}/public/vehicles/available/`, { params })
       .subscribe({
         next: (res) => {
           this.vehicles = res;

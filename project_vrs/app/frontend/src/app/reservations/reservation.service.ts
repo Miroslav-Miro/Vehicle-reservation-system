@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { apiBase } from '../shared/api';
 
 @Injectable({ providedIn: 'root' })
 export class ReservationsService {
-    private base = 'http://localhost:8000/api';
+    private base = apiBase();
 
     constructor(private http: HttpClient) { }
 

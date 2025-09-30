@@ -11,5 +11,7 @@ if [ "$DATABASE" = "postgres" ]; then
 fi
 
 python manage.py migrate
+# collect static files for WhiteNoise serving (non-fatal if misconfigured)
+python manage.py collectstatic --noinput || true
 # python manage.py runserver 0.0.0.0:8000
 daphne -b 0.0.0.0 -p 8000 backend.asgi:application

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { apiBase } from '../shared/api';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -38,8 +39,9 @@ export class VehicleDetailComponent implements OnInit {
       httpParams = httpParams.set('start', start).set('end', end);
     }
 
+    const base = apiBase();
     this.http
-      .get<any>(`http://localhost:8000/api/public/vehicles/${this.vehicleId}/`, { params: httpParams })
+      .get<any>(`${base}/public/vehicles/${this.vehicleId}/`, { params: httpParams })
       .subscribe({
         next: (res) => {
           this.detail = res;

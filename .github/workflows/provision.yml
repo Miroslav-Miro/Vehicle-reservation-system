@@ -1,0 +1,46 @@
+name: provision-infra
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: infra/terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        id: tfapply
+        working-directory: infra/terraform
+        env:
+          TF_VAR_project_name: ${{ secrets.PROJECT_NAME }}
+          TF_VAR_postgres_admin_username: ${{ secrets.POSTGRES_ADMIN_USERNAME }}
+          TF_VAR_postgres_admin_password: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
+          TF_VAR_django_secret_key: ${{ secrets.DJANGO_SECRET_KEY }}
+          TF_VAR_location: ${{ vars.AZURE_LOCATION }}
+          TF_VAR_sql_database_name: ${{ vars.SQL_DATABASE_NAME }}
+        run: |
+          terraform apply -auto-approve
+
+      - name: Terraform Outputs
+        working-directory: infra/terraform
+        run: |
+          terraform output -no-color
+

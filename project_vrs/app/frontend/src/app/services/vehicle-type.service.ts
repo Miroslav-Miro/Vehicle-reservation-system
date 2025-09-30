@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiBase } from '../shared/api';
 
 export interface VehicleType {
     id: number;
@@ -9,7 +10,7 @@ export interface VehicleType {
 
 @Injectable({ providedIn: 'root' })
 export class VehicleTypeService {
-    private base = 'http://localhost:8000/api/vehicle_type_filter'
+    private base = `${apiBase()}/vehicle_type_filter`
 
     constructor(private http: HttpClient) { }
 
