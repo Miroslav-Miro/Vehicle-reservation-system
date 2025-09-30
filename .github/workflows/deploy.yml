@@ -136,6 +136,47 @@ jobs:
         with:
           ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
 
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Locate Terraform remote state
+        id: tfstate
+        run: |
+          set -euo pipefail
+          PROJ="${{ secrets.PROJECT_NAME }}"
+          STATE_RG="${PROJ}-tfstate-rg"
+          SA=$(az storage account list -g "$STATE_RG" --query "[0].name" -o tsv)
+          echo "state_rg=$STATE_RG" >> $GITHUB_OUTPUT
+          echo "state_sa=$SA" >> $GITHUB_OUTPUT
+          echo "state_container=tfstate" >> $GITHUB_OUTPUT
+          echo "state_key=${PROJ}.tfstate" >> $GITHUB_OUTPUT
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init (read outputs)
+        working-directory: infra/terraform
+        env:
+          ARM_USE_OIDC: true
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ steps.tfstate.outputs.state_rg }}" \
+            -backend-config="storage_account_name=${{ steps.tfstate.outputs.state_sa }}" \
+            -backend-config="container_name=${{ steps.tfstate.outputs.state_container }}" \
+            -backend-config="key=${{ steps.tfstate.outputs.state_key }}"
+
+      - name: Read Terraform outputs
+        id: tfout
+        working-directory: infra/terraform
+        run: |
+          OUT=$(terraform output -json)
+          echo "$OUT" | jq -r '.resource_group.value' | sed 's/\r$//' > /tmp/rg
+          echo "$OUT" | jq -r '.static_site_name.value' | sed 's/\r$//' > /tmp/swa_name
+          echo "resource_group=$(cat /tmp/rg)" >> $GITHUB_OUTPUT
+          echo "swa_name=$(cat /tmp/swa_name)" >> $GITHUB_OUTPUT
+
       - name: Inject backend host into env.js
         run: |
           HOST="${{ needs.backend.outputs.backend_host }}"
