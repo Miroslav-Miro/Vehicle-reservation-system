@@ -115,7 +115,6 @@ class AdminKPIView(APIView):
 def _status_id_ci(name: str) -> int:
     obj = ReservationStatus.objects.filter(status__iexact=name).first()
     if not obj:
-        # Let DRF convert this into a 400 automatically
         from rest_framework.exceptions import ValidationError
 
         raise ValidationError(
@@ -156,7 +155,7 @@ class AdminReservationTransitionView(APIView):
         )
 
     @swagger_auto_schema(
-        request_body=ReservationTransitionInputSerializer,  # <-- THIS makes Swagger show the 'to' field
+        request_body=ReservationTransitionInputSerializer,
         responses={200: ReservationSerializer, 400: "Bad Request", 404: "Not Found"},
         operation_summary="Admin: change reservation status",
         operation_description='Body example: {"to": "CONFIRMED"}',
@@ -195,7 +194,7 @@ class AdminReservationTransitionView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # 4) Side effects
+        # Side effects
         if target == CONFIRMED:
             res.hold_expires_at = None
         elif target == PENDING_PAYMENT:
@@ -203,11 +202,11 @@ class AdminReservationTransitionView(APIView):
         elif target in (COMPLETED, CANCELLED):
             res.hold_expires_at = None
 
-        # 5) Persist status
+        # Persist status
         res.status_id = _status_id_ci(target)
         res.save(update_fields=["status", "hold_expires_at"])
 
-        # 6) Fire-and-forget email
+        # Fire and forget email
         try:
             from api.email_sender.tasks import send_reservation_status_changed_email
 
@@ -215,5 +214,5 @@ class AdminReservationTransitionView(APIView):
         except Exception:
             pass
 
-        # 7) Response
+        # Response
         return Response(ReservationSerializer(res).data, status=status.HTTP_200_OK)

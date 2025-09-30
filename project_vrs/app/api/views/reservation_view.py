@@ -8,8 +8,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Prefetch
-from channels.layers import get_channel_layer
+
+# from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+
 
 from ..custom_permissions.mixed_role_permissions import RoleRequired
 from ..models import (
@@ -18,7 +20,7 @@ from ..models import (
     PhysicalVehicle,
     Location,
     ReservationStatus,
-    Notification
+    Notification,
 )
 from ..serializers.reservation_serializer import (
     ReservationSerializer,
@@ -51,6 +53,7 @@ ACTIVE_STATUSES = {"pending", "confirmed", "active"}
 #                 f"user_{uid}", {"type": "notify", "message": message}
 #             )
 
+
 #     if roles:
 #         for role in roles:
 #             async_to_sync(channel_layer.group_send)(
@@ -60,7 +63,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
     """
     User-facing reservations API.
     """
-    
+
     serializer_class = ReservationSerializer
 
     def get_permissions(self):
@@ -158,8 +161,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
         BLOCKING_STATUSES = {"pending", "confirmed", "active"}
         for vid, qty in qty_by_vid.items():
             qs = (
-                PhysicalVehicle.objects
-                .filter(vehicle_id=vid, location_id=pickup_id)
+                PhysicalVehicle.objects.filter(vehicle_id=vid, location_id=pickup_id)
                 .exclude(
                     physicalvehiclereservation__reservation__start_date__lt=end,
                     physicalvehiclereservation__reservation__end_date__gt=start,
@@ -182,13 +184,17 @@ class ReservationViewSet(viewsets.ModelViewSet):
                 )
 
             # fetch the actual unit rows for attaching
-            chosen_units.extend(list(PhysicalVehicle.objects.filter(id__in=available[:qty])))
+            chosen_units.extend(
+                list(PhysicalVehicle.objects.filter(id__in=available[:qty]))
+            )
 
         # status
         try:
             pending = ReservationStatus.objects.get(status__iexact="pending")
         except ReservationStatus.DoesNotExist:
-            return Response({"detail": "Missing ReservationStatus 'pending'."}, status=500)
+            return Response(
+                {"detail": "Missing ReservationStatus 'pending'."}, status=500
+            )
 
         # compute rental days (ceil to whole days, min 1)
         seconds = (end - start).total_seconds()
@@ -209,7 +215,9 @@ class ReservationViewSet(viewsets.ModelViewSet):
         total = Decimal("0.00")
         # we need unit rows with vehicle fk; they were fetched above
         for u in chosen_units:
-            PhysicalVehicleReservation.objects.create(reservation=res, physical_vehicle=u)
+            PhysicalVehicleReservation.objects.create(
+                reservation=res, physical_vehicle=u
+            )
             total += u.vehicle.price_per_day * days
 
         res.total_price = total
@@ -297,16 +305,22 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
         payload = {
             "action": "cancelled",
-            "reservation": ReservationSerializer(reservation, context={"request": request}).data,
+            "reservation": ReservationSerializer(
+                reservation, context={"request": request}
+            ).data,
             "message": f"Reservation #{reservation.id} cancelled",
         }
 
         # fire only after the DB row is committed so GET sees it
-        transaction.on_commit(lambda: broadcast_notification(
-            payload,
-            user_id=request.user.id,      # persist for the creator
-            roles=["managers"]            # live fanout to managers (persist for them is optional)
-        ))
+        transaction.on_commit(
+            lambda: broadcast_notification(
+                payload,
+                user_id=request.user.id,  # persist for the creator
+                roles=[
+                    "managers"
+                ],  # live fanout to managers (persist for them is optional)
+            )
+        )
 
         return Response(
             ReservationSerializer(reservation, context={"request": request}).data,
