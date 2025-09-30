@@ -19,12 +19,79 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Ensure remote state storage
+        id: tfstate
+        env:
+          PROJ: ${{ secrets.PROJECT_NAME }}
+          LOC: ${{ vars.AZURE_LOCATION != '' && vars.AZURE_LOCATION || 'westeurope' }}
+        run: |
+          set -euo pipefail
+          # Compute names
+          STATE_RG="${PROJ}-tfstate-rg"
+          # storage account must be 3-24 lower alnum
+          SA_BASE=$(echo "tf${PROJ}sa" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9')
+          SA_NAME=${SA_BASE:0:22}$(echo $RANDOM | tr -cd '0-9' | cut -c1-2)
+          CONTAINER="tfstate"
+          KEY="${PROJ}.tfstate"
+
+          echo "Using state RG: $STATE_RG, SA: $SA_NAME, container: $CONTAINER, key: $KEY"
+
+          # Create RG if missing
+          if ! az group show -n "$STATE_RG" >/dev/null 2>&1; then
+            az group create -n "$STATE_RG" -l "$LOC" >/dev/null
+          fi
+
+          # Create storage account if missing
+          if ! az storage account show -n "$SA_NAME" -g "$STATE_RG" >/dev/null 2>&1; then
+            az storage account create -n "$SA_NAME" -g "$STATE_RG" -l "$LOC" --sku Standard_LRS >/dev/null
+          fi
+
+          # Get connection string for container creation
+          CONN=$(az storage account show-connection-string -n "$SA_NAME" -g "$STATE_RG" -o tsv | awk '{print $1}')
+          # Ensure container exists
+          az storage container create --name "$CONTAINER" --connection-string "$CONN" >/dev/null
+
+          echo "state_rg=$STATE_RG" >> $GITHUB_OUTPUT
+          echo "state_sa=$SA_NAME" >> $GITHUB_OUTPUT
+          echo "state_container=$CONTAINER" >> $GITHUB_OUTPUT
+          echo "state_key=$KEY" >> $GITHUB_OUTPUT
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
         working-directory: infra/terraform
-        run: terraform init
+        env:
+          ARM_USE_OIDC: true
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ steps.tfstate.outputs.state_rg }}" \
+            -backend-config="storage_account_name=${{ steps.tfstate.outputs.state_sa }}" \
+            -backend-config="container_name=${{ steps.tfstate.outputs.state_container }}" \
+            -backend-config="key=${{ steps.tfstate.outputs.state_key }}"
+
+      - name: Import existing Azure resources (if any)
+        working-directory: infra/terraform
+        env:
+          PROJ: ${{ secrets.PROJECT_NAME }}
+        run: |
+          set -euo pipefail
+          SUB=$(az account show --query id -o tsv)
+          RG="${PROJ}-rg"
+          # Import Resource Group if it already exists
+          if az group show -n "$RG" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_resource_group.rg "/subscriptions/$SUB/resourceGroups/$RG" || true
+          fi
+          # Import Redis if it already exists
+          REDIS_NAME="${PROJ}-redis"
+          if az redis show -g "$RG" -n "$REDIS_NAME" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_redis_cache.redis "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.Cache/redis/$REDIS_NAME" || true
+          fi
+          # Import ACR if it already exists
+          ACR_NAME="${PROJ}acr"
+          if az acr show -g "$RG" -n "$ACR_NAME" >/dev/null 2>&1; then
+            terraform import -no-color azurerm_container_registry.acr "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.ContainerRegistry/registries/$ACR_NAME" || true
+          fi
 
       - name: Terraform Apply
         id: tfapply
