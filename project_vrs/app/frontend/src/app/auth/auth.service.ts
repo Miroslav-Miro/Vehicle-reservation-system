@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
+import { apiBase } from '../shared/api';
 import { throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:8000/api/auth';
+  private apiUrl = `${apiBase()}/auth`;
   private role: string | null = null;
 
   private _isAuthed$ = new BehaviorSubject<boolean>(!!localStorage.getItem('access'));
@@ -33,7 +34,7 @@ export class AuthService {
   refreshToken() {
     const refresh = localStorage.getItem('refresh');
     if (!refresh) return throwError(() => new Error('No refresh token'));
-    return this.http.post<any>('http://localhost:8000/api/auth/refresh/', { refresh }).pipe(
+    return this.http.post<any>(`${apiBase()}/auth/refresh/`, { refresh }).pipe(
       tap(res => {
         if (res.access) localStorage.setItem('access', res.access);
       })

@@ -12,7 +12,26 @@ export interface NotificationDto {
 
 @Injectable({ providedIn: 'root' })
 export class NotificationsHttpService {
-    private base = 'http://localhost:8000/api';
+    private resolveBase(): string {
+        const w: any = (window as any) || {};
+        const base: string | undefined = w.__env?.API_BASE;
+        if (base && typeof base === 'string' && base.trim()) return base.replace(/\/$/, '');
+
+        // Fallback: if API_HOST provided, build a scheme + host
+        const host: string | undefined = w.__env?.API_HOST || localStorage.getItem('api_host') || undefined;
+        if (host) {
+            try {
+                const u = new URL(/^https?:\/\//i.test(host) ? host : `https://${host}`);
+                return `${u.origin.replace(/\/$/, '')}/api`;
+            } catch {
+                return `https://${host.replace(/\/$/, '')}/api`;
+            }
+        }
+        // Local dev default
+        return 'http://localhost:8000/api';
+    }
+
+    private base = this.resolveBase();
 
     constructor(private http: HttpClient) { }
 

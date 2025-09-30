@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiBase } from '../shared/api';
 
 export interface Location {
     id: number;
@@ -10,7 +11,7 @@ export interface Location {
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {
-    private base = 'http://localhost:8000/api/locations_filter';
+    private base = `${apiBase()}/locations_filter`;
 
     constructor(private http: HttpClient) { }
 

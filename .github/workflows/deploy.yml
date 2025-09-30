@@ -1,0 +1,108 @@
+name: deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (branch/tag/SHA) to deploy"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    outputs:
+      backend_host: ${{ steps.backend_url.outputs.host }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get ACR Login Server
+        id: acr
+        run: |
+          ACR_LOGIN_SERVER=$(az acr show -n ${{ secrets.ACR_NAME }} --query loginServer -o tsv)
+          echo "login_server=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
+
+      - name: ACR Login
+        run: az acr login -n ${{ secrets.ACR_NAME }}
+
+      - name: Docker Build and Push (backend)
+        env:
+          ACR: ${{ steps.acr.outputs.login_server }}
+        run: |
+          docker build -f project_vrs/app/Dockerfile.backend -t $ACR/vrs-backend:${{ github.sha }} project_vrs/app
+          docker push $ACR/vrs-backend:${{ github.sha }}
+
+      - name: Point backend Web App to new image
+        env:
+          ACR: ${{ steps.acr.outputs.login_server }}
+        run: |
+          az webapp config container set \
+            -g ${{ secrets.RESOURCE_GROUP }} \
+            -n ${{ secrets.BACKEND_WEBAPP_NAME }} \
+            --docker-custom-image-name $ACR/vrs-backend:${{ github.sha }} \
+            --docker-registry-server-url https://$ACR
+          # Ensure registry creds are present (from ACR admin)
+          az webapp config appsettings set -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.BACKEND_WEBAPP_NAME }} --settings \
+            DOCKER_REGISTRY_SERVER_URL=https://${{ steps.acr.outputs.login_server }} \
+            DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.ACR_USERNAME }} \
+            DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.ACR_PASSWORD }}
+          az webapp restart -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.BACKEND_WEBAPP_NAME }}
+
+      - name: Point worker Web App to new image
+        if: always()
+        env:
+          ACR: ${{ steps.acr.outputs.login_server }}
+        run: |
+          az webapp config container set \
+            -g ${{ secrets.RESOURCE_GROUP }} \
+            -n ${{ secrets.WORKER_WEBAPP_NAME }} \
+            --docker-custom-image-name $ACR/vrs-backend:${{ github.sha }} \
+            --docker-registry-server-url https://$ACR
+          az webapp config appsettings set -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.WORKER_WEBAPP_NAME }} --settings \
+            DOCKER_REGISTRY_SERVER_URL=https://${{ steps.acr.outputs.login_server }} \
+            DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.ACR_USERNAME }} \
+            DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.ACR_PASSWORD }}
+          az webapp restart -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.WORKER_WEBAPP_NAME }}
+
+      - name: Compute Backend URL
+        id: backend_url
+        run: |
+          HOST=$(az webapp show -g ${{ secrets.RESOURCE_GROUP }} -n ${{ secrets.BACKEND_WEBAPP_NAME }} --query defaultHostName -o tsv)
+          echo "host=$HOST" >> $GITHUB_OUTPUT
+
+  frontend:
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+
+      - name: Inject backend host into env.js
+        run: |
+          HOST="${{ needs.backend.outputs.backend_host }}"
+          sed -i "s#API_BASE: 'http://localhost:8000/api'#API_BASE: 'https://$HOST/api'#" project_vrs/app/frontend/public/env.js
+          sed -i "s#API_HOST: 'localhost:8000'#API_HOST: '$HOST'#" project_vrs/app/frontend/public/env.js
+
+      - name: Deploy Static Web App
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "upload"
+          app_location: "project_vrs/app/frontend"
+          output_location: "dist/frontend"
+          skip_api_build: true

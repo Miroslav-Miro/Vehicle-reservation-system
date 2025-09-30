@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiBase } from '../shared/api';
 
 export interface Model {
     id: number;
@@ -16,7 +17,7 @@ export interface Brand {
 
 @Injectable({ providedIn: 'root' })
 export class BrandModelService {
-    private base = 'http://localhost:8000/api/brands_models_filter'
+    private base = `${apiBase()}/brands_models_filter`
 
     constructor(private http: HttpClient) { }
 
