@@ -71,7 +71,6 @@
         </div>
 
         <footer class="card__footer">
-            <button class="btn btn--ghost">Details</button>
             <button
                 class="btn btn--danger"
                 [disabled]="res._busy"
@@ -86,3 +85,5 @@
 <ng-template #empty>
     <div class="empty">No active reservations.</div>
 </ng-template>
+
+<app-notification-section></app-notification-section>

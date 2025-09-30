@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, NgFor, NgIf } from '@angular/common';
 import { ReservationsService } from '../reservations/reservation.service';
-
+import { NotificationSectionComponent } from '../notification-section/notification-section.component';
 @Component({
   selector: 'app-history-reservations',
   standalone: true,
-  imports: [CommonModule, NgIf, NgFor, DatePipe],
+  imports: [CommonModule, NgIf, NgFor, DatePipe, NotificationSectionComponent],
   templateUrl: './history-reservations.component.html',
   styleUrls: ['./history-reservations.component.less']   
 })

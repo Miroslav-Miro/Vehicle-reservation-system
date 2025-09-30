@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
  
-from .views.payment_view import MockPaymentView
+from .views.payment_view import MockCardValidationView
  
 from .views.registration_view import RegisterView
 from .views.role_view import RoleViewSet
@@ -79,11 +79,12 @@ urlpatterns = [
         "public/vehicles/<int:pk>/", public_vehicle_detail, name="public-vehicle-detail"
     ),
     path("ops/kpis/", AdminKPIView.as_view(), name="ops-kpis"),
-    path(
-        "payments/mock/<int:reservation_id>/",
-        MockPaymentView.as_view(),
-        name="payments-mock",
-    ),
+    # path(
+    #     "payments/mock/<int:reservation_id>/",
+    #     MockPaymentView.as_view(),
+    #     name="payments-mock",
+    # ),
+    path("mock_payments/validate/", MockCardValidationView.as_view(), name="mock_payment_validate"),
     path(
         "ops/reservations/<int:pk>/transition/",
         AdminReservationTransitionView.as_view(),

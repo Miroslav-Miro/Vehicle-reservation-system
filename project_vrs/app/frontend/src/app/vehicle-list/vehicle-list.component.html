@@ -198,7 +198,9 @@
 
     <div class="basket-footer" *ngIf="basketItems.length > 0">
         <div class="total">Total: €{{ basketTotal }}</div>
-        <button class="btn btn--primary" type="button" (click)="reserve()">Reserve</button>
+        <!-- <button class="btn btn--primary" type="button" (click)="reserve()">Reserve</button> -->
+        <button class="btn btn--primary" type="button" (click)="startCheckout()">Reserve</button>
+
         <button class="btn btn--ghost" type="button" (click)="clearBasket()">Clear</button>
     </div>
 </div>
@@ -210,3 +212,61 @@
 <button class="basket-widget" *ngIf="basketCount > 0" (click)="toggleSidebar()">
     🛒 {{ basketCount }}
 </button>
+
+<!-- Payment Modal -->
+<!-- Payment Modal -->
+<div class="modal-backdrop" *ngIf="showPayment" (click)="showPayment=false"></div>
+<div class="modal" *ngIf="showPayment" (click)="$event.stopPropagation()">
+    <div class="modal__head">
+        <h3>Payment details</h3>
+        <button type="button" class="close-btn" (click)="showPayment=false">×</button>
+    </div>
+
+    <div class="modal__body">
+        <div class="form-grid">
+            <label>
+                Name on card
+                <input class="control--sm" [(ngModel)]="payment.name_on_card" />
+            </label>
+
+            <label>
+                Card number
+                <input class="control--sm" [(ngModel)]="payment.card_number" placeholder="4242 4242 4242 4242" />
+            </label>
+
+            <div class="row">
+                <label>
+                    Exp month
+                    <input class="control--sm" type="number" [(ngModel)]="payment.exp_month" min="1" max="12" />
+                </label>
+            </div>
+            <div class="row">
+                <label>
+                    Exp year
+                    <input class="control--sm" type="number" [(ngModel)]="payment.exp_year" />
+                </label>
+            </div>
+            <div class="row">
+                <label>
+                    CVV
+                    <input class="control--sm" [(ngModel)]="payment.cvv" />
+                </label>
+            </div>
+        </div>
+
+        <div *ngIf="payError" class="form-error" style="margin-top:.6rem;">
+            {{ payError }}
+        </div>
+    </div>
+
+    <div class="modal__foot">
+        <button class="btn btn--primary" type="button" (click)="payAndReserve()" [disabled]="isPaying">
+            {{ isPaying ? 'Processing…' : 'Pay now' }}
+        </button>
+        <button class="btn btn--ghost" type="button" (click)="showPayment=false" [disabled]="isPaying">Cancel</button>
+    </div>
+</div>
+
+
+
+<app-notification-section></app-notification-section>

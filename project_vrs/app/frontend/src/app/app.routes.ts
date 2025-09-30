@@ -22,7 +22,7 @@ export const routes: Routes = [
   { path: 'auth/register', component: RegisterComponent, canMatch: [GuestGuard] },
   { path: 'reservations/current',component: CurrentReservationsComponent, canActivate: [AuthGuard]},
   { path: 'reservations/history', component: HistoryReservationsComponent, canActivate: [AuthGuard]},
-  { path: 'notifications', component:NotificationSectionComponent, canActivate: [AuthGuard]},
+  // { path: 'notifications', component:NotificationSectionComponent, canActivate: [AuthGuard]},
 
 
   // Protected routes
