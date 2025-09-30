@@ -194,6 +194,20 @@ jobs:
           npm ci --no-audit --prefer-offline
           npm run build
 
+      - name: Determine app artifacts dir
+        id: appdir
+        run: |
+          set -e
+          if [ -f project_vrs/app/frontend/dist/frontend/index.html ]; then
+            echo "dir=project_vrs/app/frontend/dist/frontend" >> $GITHUB_OUTPUT
+          elif [ -f project_vrs/app/frontend/dist/frontend/browser/index.html ]; then
+            echo "dir=project_vrs/app/frontend/dist/frontend/browser" >> $GITHUB_OUTPUT
+          else
+            echo "index.html not found in dist; tree:" >&2
+            ls -R project_vrs/app/frontend/dist || true
+            exit 1
+          fi
+
       - name: Ensure Static Web Apps CLI extension
         run: |
           az extension add -n staticwebapp --only-show-errors || az extension update -n staticwebapp --only-show-errors
@@ -224,5 +238,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ steps.swa.outputs.token }}
           action: "upload"
-          app_location: "project_vrs/app/frontend/dist/frontend"
+          app_location: ${{ steps.appdir.outputs.dir }}
           skip_app_build: true
