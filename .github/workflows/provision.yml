@@ -36,6 +36,7 @@ jobs:
           TF_VAR_django_secret_key: ${{ secrets.DJANGO_SECRET_KEY }}
           TF_VAR_location: ${{ vars.AZURE_LOCATION != '' && vars.AZURE_LOCATION || 'westeurope' }}
           TF_VAR_sql_database_name: ${{ vars.SQL_DATABASE_NAME != '' && vars.SQL_DATABASE_NAME || 'vrsdb' }}
+          TF_VAR_pg_location: ${{ vars.PG_LOCATION != '' && vars.PG_LOCATION || '' }}
         run: |
           terraform apply -auto-approve
 

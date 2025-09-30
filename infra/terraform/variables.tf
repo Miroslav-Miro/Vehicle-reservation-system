@@ -9,6 +9,12 @@ variable "location" {
   description = "Azure region."
 }
 
+variable "pg_location" {
+  type        = string
+  default     = ""
+  description = "Optional override region for PostgreSQL Flexible Server. Leave empty to use var.location."
+}
+
 variable "backend_image_tag" {
   type        = string
   default     = "latest"
@@ -65,4 +71,3 @@ variable "cors_allowed_origins" {
   default     = []
   description = "Additional CORS origins (e.g., https://your-frontend)."
 }
-

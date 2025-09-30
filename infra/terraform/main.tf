@@ -34,7 +34,7 @@ resource "azurerm_service_plan" "plan" {
 resource "azurerm_postgresql_flexible_server" "pg" {
   name                   = local.pg_name
   resource_group_name    = azurerm_resource_group.rg.name
-  location               = azurerm_resource_group.rg.location
+  location               = var.pg_location != "" ? var.pg_location : var.location
   administrator_login    = var.postgres_admin_username
   administrator_password = var.postgres_admin_password
   sku_name               = var.postgres_sku_name
