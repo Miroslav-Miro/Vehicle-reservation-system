@@ -65,11 +65,13 @@ jobs:
           echo "$OUT" | jq -r '.resource_group.value' | sed 's/\r$//' > /tmp/rg
           echo "$OUT" | jq -r '.backend_webapp_name.value' | sed 's/\r$//' > /tmp/backend
           echo "$OUT" | jq -r '.worker_webapp_name.value' | sed 's/\r$//' > /tmp/worker
+          echo "$OUT" | jq -r '.static_site_name.value' | sed 's/\r$//' > /tmp/swa_name
           echo "acr_server=$(cat /tmp/acr_server)" >> $GITHUB_OUTPUT
           echo "acr_name=$(cat /tmp/acr_name)" >> $GITHUB_OUTPUT
           echo "resource_group=$(cat /tmp/rg)" >> $GITHUB_OUTPUT
           echo "backend_name=$(cat /tmp/backend)" >> $GITHUB_OUTPUT
           echo "worker_name=$(cat /tmp/worker)" >> $GITHUB_OUTPUT
+          echo "swa_name=$(cat /tmp/swa_name)" >> $GITHUB_OUTPUT
 
       - name: ACR Login
         run: az acr login -n ${{ steps.tfout.outputs.acr_name }}
@@ -140,10 +142,20 @@ jobs:
           sed -i "s#API_BASE: 'http://localhost:8000/api'#API_BASE: 'https://$HOST/api'#" project_vrs/app/frontend/public/env.js
           sed -i "s#API_HOST: 'localhost:8000'#API_HOST: '$HOST'#" project_vrs/app/frontend/public/env.js
 
+      - name: Ensure Static Web Apps CLI extension
+        run: |
+          az extension add -n staticwebapp --only-show-errors || az extension update -n staticwebapp --only-show-errors
+
+      - name: Fetch SWA deployment token
+        id: swa
+        run: |
+          TOKEN=$(az staticwebapp secrets list -g ${{ steps.tfout.outputs.resource_group }} -n ${{ steps.tfout.outputs.swa_name }} --query properties.apiKey -o tsv)
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
       - name: Deploy Static Web App
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ steps.swa.outputs.token }}
           action: "upload"
           app_location: "project_vrs/app/frontend"
           output_location: "dist/frontend"
