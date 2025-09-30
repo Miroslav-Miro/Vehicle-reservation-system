@@ -34,8 +34,8 @@ jobs:
           TF_VAR_postgres_admin_username: ${{ secrets.POSTGRES_ADMIN_USERNAME }}
           TF_VAR_postgres_admin_password: ${{ secrets.POSTGRES_ADMIN_PASSWORD }}
           TF_VAR_django_secret_key: ${{ secrets.DJANGO_SECRET_KEY }}
-          TF_VAR_location: ${{ vars.AZURE_LOCATION }}
-          TF_VAR_sql_database_name: ${{ vars.SQL_DATABASE_NAME }}
+          TF_VAR_location: ${{ vars.AZURE_LOCATION != '' && vars.AZURE_LOCATION || 'westeurope' }}
+          TF_VAR_sql_database_name: ${{ vars.SQL_DATABASE_NAME != '' && vars.SQL_DATABASE_NAME || 'vrsdb' }}
         run: |
           terraform apply -auto-approve
 
@@ -43,4 +43,3 @@ jobs:
         working-directory: infra/terraform
         run: |
           terraform output -no-color
-
