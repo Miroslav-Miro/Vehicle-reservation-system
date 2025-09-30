@@ -183,6 +183,17 @@ jobs:
           sed -i "s#API_BASE: 'http://localhost:8000/api'#API_BASE: 'https://$HOST/api'#" project_vrs/app/frontend/public/env.js
           sed -i "s#API_HOST: 'localhost:8000'#API_HOST: '$HOST'#" project_vrs/app/frontend/public/env.js
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install deps and build Angular
+        working-directory: project_vrs/app/frontend
+        run: |
+          npm ci --no-audit --prefer-offline
+          npm run build
+
       - name: Ensure Static Web Apps CLI extension
         run: |
           az extension add -n staticwebapp --only-show-errors || az extension update -n staticwebapp --only-show-errors
@@ -213,6 +224,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ steps.swa.outputs.token }}
           action: "upload"
-          app_location: "project_vrs/app/frontend"
-          output_location: "dist/frontend"
-          skip_api_build: true
+          app_location: "project_vrs/app/frontend/dist/frontend"
+          skip_app_build: true
