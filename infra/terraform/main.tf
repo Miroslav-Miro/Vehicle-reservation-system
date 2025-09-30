@@ -3,12 +3,15 @@ locals {
   acr_name     = substr("${local.name}acr", 0, 50)
   rg_name      = "${local.name}-rg"
   plan_name    = "${local.name}-plan"
-  web_name     = "${local.name}-backend"
-  worker_name  = "${local.name}-worker"
   redis_name   = substr("${local.name}-redis", 0, 63)
   # Make PG server name unique across regions, to avoid conflicts when moving regions
   pg_name      = substr("${local.name}-pg${var.pg_location != "" ? "-" : ""}${lower(replace(var.pg_location, "[^a-z0-9]", ""))}", 0, 60)
   swa_name     = "${local.name}-frontend"
+}
+
+# Short random hex suffix for globally-unique Web App names
+resource "random_id" "suffix" {
+  byte_length = 2
 }
 
 resource "azurerm_resource_group" "rg" {
@@ -71,7 +74,7 @@ resource "azurerm_redis_cache" "redis" {
 }
 
 resource "azurerm_linux_web_app" "backend" {
-  name                = local.web_name
+  name                = "${local.name}-backend-${random_id.suffix.hex}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.plan.id
@@ -114,7 +117,7 @@ resource "azurerm_linux_web_app" "backend" {
 }
 
 resource "azurerm_linux_web_app" "worker" {
-  name                = local.worker_name
+  name                = "${local.name}-worker-${random_id.suffix.hex}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.plan.id
