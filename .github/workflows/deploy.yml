@@ -9,6 +9,10 @@ on:
         description: "Git ref (branch/tag/SHA) to deploy"
         required: false
         default: ""
+      api_base:
+        description: "Override API base URL (e.g., https://vrs-backend-8923.azurewebsites.net/api)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -179,9 +183,17 @@ jobs:
 
       - name: Inject backend host into env.js
         run: |
-          HOST="${{ needs.backend.outputs.backend_host }}"
-          sed -i "s#API_BASE: 'http://localhost:8000/api'#API_BASE: 'https://$HOST/api'#" project_vrs/app/frontend/public/env.js
-          sed -i "s#API_HOST: 'localhost:8000'#API_HOST: '$HOST'#" project_vrs/app/frontend/public/env.js
+          # Prefer manual override if provided; otherwise use backend host output
+          if [ -n "${{ inputs.api_base }}" ]; then
+            BASE="${{ inputs.api_base }}"
+          else
+            HOST="${{ needs.backend.outputs.backend_host }}"
+            BASE="https://$HOST/api"
+          fi
+          # Derive host part from BASE (strip scheme and path)
+          API_HOST=$(echo "$BASE" | sed -E 's#^https?://##; s#/.*$##')
+          sed -i "s#API_BASE: 'http://localhost:8000/api'#API_BASE: '$BASE'#" project_vrs/app/frontend/public/env.js
+          sed -i "s#API_HOST: 'localhost:8000'#API_HOST: '$API_HOST'#" project_vrs/app/frontend/public/env.js
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
