@@ -10,6 +10,7 @@ import { LocationService, Location } from '../services/location.service';
 import { BrandModelService, Brand, Model } from '../services/brand-model.service';
 import { VehicleTypeService, VehicleType } from '../services/vehicle-type.service';
 import { EngineTypeService, EngineType } from '../services/engine-type.service';
+import { NotificationSectionComponent } from '../notification-section/notification-section.component';
 
 type BasketItem = {
   vehicle_id: number;
@@ -20,10 +21,19 @@ type BasketItem = {
   qty: number;
 };
 
+type PaymentForm = {
+  name_on_card: string;
+  card_number: string;
+  exp_month: number | null;
+  exp_year: number | null;
+  cvv: string;
+  simulate?: 'success' | 'fail'; // optional fast path (defaults to success for demo)
+};
+
 @Component({
   selector: 'app-vehicle-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NotificationSectionComponent],
   templateUrl: './vehicle-list.component.html',
   styleUrls: ['./vehicle-list.component.less'],
 })
@@ -35,6 +45,51 @@ export class VehicleListComponent implements OnInit {
     sidebar: 'vl.sidebarOpen',
   };
 
+// --- Payment modal state ---
+showPayment = false;
+isPaying = false;
+payError = '';
+payment = {
+  name_on_card: '',
+  card_number: '',
+  exp_month: null as number | null,
+  exp_year: null as number | null,
+  cvv: ''
+};
+
+// Open modal from the basket footer
+startCheckout() {
+  if (!this.isSearchReady() || this.basketCount === 0) return;
+  this.showPayment = true;
+  this.payError = '';
+  this.toggleSidebar(false);
+}
+
+// Validate on backend; only then create the reservation
+payAndReserve() {
+  if (!this.isSearchReady() || this.basketCount === 0) return;
+
+  this.isPaying = true;
+  this.payError = '';
+
+  this.http.post('http://localhost:8000/api/mock_payments/validate/', this.payment)
+    .subscribe({
+      next: () => {
+        this.isPaying = false;
+        this.showPayment = false;
+        // Backend decided it’s valid -> proceed to create reservation
+        this.reserve(); // your existing method
+      },
+      error: (err) => {
+        this.isPaying = false;
+        this.payError = err?.error?.detail
+          || err?.error?.card_number?.[0]
+          || err?.error?.exp_month
+          || err?.error?.cvv
+          || 'Payment failed. Check card details.';
+      }
+    });
+}
   // ---------- Basket state ----------
   // Partial so template optional-chaining is valid (no NG8107).
   basket: Partial<Record<number, BasketItem>> = {};

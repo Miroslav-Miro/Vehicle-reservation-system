@@ -1,25 +1,64 @@
 <section class="section container vehicle-detail" *ngIf="detail; else loading">
-    <h2>{{ detail.brand }} {{ detail.model }}</h2>
+    <div class="sheet">
+        <header class="header">
+            <h2>
+                <span class="brand">{{ detail.brand }}  </span>
+                
+                <span class="model">{{ detail.model }}</span>
+            </h2>
 
-    <div class="specs">
-        <div>Type: <strong>{{ detail.vehicle_type }}</strong></div>
-        <div>Engine: <strong>{{ detail.engine_type }}</strong></div>
-        <div>Seats: <strong>{{ detail.seats }}</strong></div>
-        <div>Price: <strong>€{{ detail.price_per_day }}</strong> / day</div>
+            <!-- <div class="meta">
+                <span class="badge">{{ detail.vehicle_type }}</span>
+                <span class="badge">{{ detail.engine_type }}</span>
+                <span class="badge">{{ detail.seats }} seats</span>
+            </div> -->
+
+            <div class="price-tag" aria-label="Price per day">
+                <span class="amount">€{{ detail.price_per_day }}</span>
+                <span class="per">/ day</span>
+            </div>
+        </header>
+
+        <div class="specs">
+            <div>
+                Type: <strong>{{ detail.vehicle_type }}</strong>
+            </div>
+            <div>
+                Engine: <strong>{{ detail.engine_type }}</strong>
+            </div>
+            <div>
+                Seats: <strong>{{ detail.seats }}</strong>
+            </div>
+        </div>
+
+        <div class="availability">
+            <span class="status" [class.ok]="detail.available_count > 0" [class.out]="detail.available_count === 0">
+                <span class="dot" aria-hidden="true"></span>
+                <strong *ngIf="detail.available_count > 0">
+                    {{ detail.available_count }} available
+                </strong>
+                <strong *ngIf="detail.available_count === 0">Sold out</strong>
+            </span>
+        </div>
+
+        <!-- <button class="btn btn--primary cta" [disabled]="detail.available_count === 0" aria-label="Reserve this car">
+            Reserve this car
+        </button> -->
     </div>
-
-    <div class="availability">
-        <strong>Available units: {{ detail.available_count }}</strong>
-    </div>
-
-    <button class="btn btn--primary" [disabled]="detail.available_count === 0">
-        Reserve this car
-    </button>
 </section>
 
 <ng-template #loading>
     <section class="section container vehicle-detail">
-        <p *ngIf="!errorMsg">Loading vehicle…</p>
-        <p *ngIf="errorMsg" class="form-error">{{ errorMsg }}</p>
+        <div class="sheet">
+            <div class="skeleton title"></div>
+            <div class="skeleton chips"></div>
+            <div class="skeleton price"></div>
+            <div class="skeleton-row">
+                <div class="skeleton card"></div>
+                <div class="skeleton card"></div>
+                <div class="skeleton card"></div>
+                <div class="skeleton card"></div>
+            </div>
+        </div>
     </section>
 </ng-template>

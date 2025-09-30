@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, NgFor, NgIf } from '@angular/common';
 import { ReservationsService } from '../reservations/reservation.service';
+import { NotificationSectionComponent } from '../notification-section/notification-section.component';
 
 @Component({
   selector: 'app-current-reservations',
   standalone: true,
-  imports: [CommonModule, NgIf, NgFor, DatePipe],
+  imports: [CommonModule, NgIf, NgFor, DatePipe, NotificationSectionComponent],
   templateUrl: './current-reservations.component.html',
   styleUrls: ['./current-reservations.component.less']
 })

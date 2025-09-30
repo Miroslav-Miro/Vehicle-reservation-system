@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Vehicle, VehicleService } from '../services/random-vehicle.service';
+import { NotificationSectionComponent } from '../notification-section/notification-section.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule,NotificationSectionComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.less'
 })

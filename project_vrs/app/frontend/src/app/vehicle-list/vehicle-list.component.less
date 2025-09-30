@@ -792,19 +792,23 @@ body {
 /* Floating Basket Widget */
 .basket-widget {
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: @soft;
+    right: 18px;
+    bottom: 80px;
+    z-index: 70;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    background: @mid;
     color: @ink;
-    font-weight: bold;
-    font-size: 1rem;
-    border: none;
-    border-radius: 50px;
-    padding: 0.7rem 1.2rem;
+    font-size: 1.2rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    z-index: 1200;
-    transition: background 0.2s, transform 0.15s ease;
+    transition: transform .12s ease, background .12s ease;
 
     &:hover {
         background: lighten(@soft, 8%);
@@ -817,15 +821,117 @@ strong {
     color: @ink;
 }
 
-.total{
+.total {
     font-weight: 600;
     color: @ink;
 }
 
-span{
+span {
     color: @ink;
 }
 
-.qty-hint{
-    color:#ff6b6b;
+.qty-hint {
+    color: #ff6b6b;
+}
+
+/* ================================
+   PAYMENT MODAL 
+================================ */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    z-index: 1200;
+}
+
+.modal {
+    position: fixed;
+    z-index: 1210;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    // width: min(520px, 92%);
+    width: 50%;
+    background: @dark;
+    color: @ink;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 14px;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, .45);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+.modal__head,
+.modal__foot {
+    padding: .9rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+
+.modal__foot {
+    border-bottom: 0;
+    border-top: 1px solid rgba(255, 255, 255, .12);
+}
+
+.modal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: @ink;
+    }
+}
+
+.modal__body {
+    padding: 1rem;
+}
+
+.close-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .18);
+    color: @ink;
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(255, 255, 255, .08);
+    }
+}
+
+.form-grid {
+    display: grid;
+    gap: .6rem;
+}
+
+.form-grid .row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .5rem;
+}
+
+/* inputs align with your .control--sm look */
+.modal input {
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .16);
+    color: @ink;
+    padding: .5rem .7rem;
+    border-radius: 10px;
+    outline: none;
+
+    &:focus {
+        border-color: @soft;
+        box-shadow: 0 0 0 3px fade(@soft, 18%);
+        background: rgba(255, 255, 255, .13);
+    }
+}
+
+@media (max-width: 520px) {
+    .form-grid .row {
+        grid-template-columns: 1fr 1fr;
+    }
 }

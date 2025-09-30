@@ -36,7 +36,7 @@
                 <h3>{{ v.brand }} {{ v.model }}</h3>
                 <p>{{ v.engine_type }} • {{ v.seats }} seats • {{ v.vehicle_type }}</p>
                 <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
-                <a [routerLink]="['/vehicle', v.vehicle_id]" class="btn btn--tiny">View</a>
+                <a routerLink="/vehicles"  class="btn btn--tiny">Check availability</a>
             </div>
         </article>
     </div>
@@ -69,3 +69,5 @@
         </div>
     </div>
 </section>
+
+<app-notification-section></app-notification-section>

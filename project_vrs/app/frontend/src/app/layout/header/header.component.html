@@ -11,7 +11,6 @@
           <a routerLink="/reservations/history" routerLinkActive="active">Reservation History</a>
         </div>
       </div>
-      <a routerLink="/notifications" routerLinkActive="active">Notifications</a>
 
     <!-- Show Login/Register when NOT logged in -->
     <ng-container *ngIf="!(auth.isAuthed$ | async); else authed">
