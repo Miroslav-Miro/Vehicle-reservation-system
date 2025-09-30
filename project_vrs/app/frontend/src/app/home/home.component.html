@@ -1,0 +1,73 @@
+<!-- HERO -->
+<section class="hero">
+    <div class="hero__bg">
+        <span class="blob blob--1"></span>
+        <span class="blob blob--2"></span>
+    </div>
+
+    <div class="hero__content container">
+        <h1 class="hero__title">
+            Drive what you love.
+            <span>Rent simply.</span>
+        </h1>
+        <p class="hero__subtitle">
+            Premium cars, instant booking, fair prices. Pick up anywhere, return anywhere.
+        </p>
+
+        <div class="hero__actions">
+            <a routerLink="/vehicles" class="btn btn--primary"> Browse </a>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURED VEHICLES -->
+<section class="section container">
+    <div class="section__head">
+        <h2>Featured vehicles</h2>
+        <a routerLink="/vehicles" class="link">Browse all →</a>
+    </div>
+
+    <div class="cards">
+        <article class="card" *ngFor="let v of featured">
+            <div class="card__media">
+                <div class="img-skeleton">{{ v.brand }} {{ v.model }}</div>
+            </div>
+            <div class="card__body">
+                <h3>{{ v.brand }} {{ v.model }}</h3>
+                <p>{{ v.engine_type }} • {{ v.seats }} seats • {{ v.vehicle_type }}</p>
+                <div class="price">€{{ v.price_per_day }} <span>/ day</span></div>
+                <a routerLink="/vehicles"  class="btn btn--tiny">Check availability</a>
+            </div>
+        </article>
+    </div>
+</section>
+
+
+<!-- WHY CHOOSE US -->
+<section class="section container">
+    <h2 class="center">Why choose us</h2>
+    <div class="features">
+        <div class="feature">
+            <div class="icon">🚗</div>
+            <h3>Quality fleet</h3>
+            <p>Carefully maintained vehicles for a smooth, safe drive.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">⚡</div>
+            <h3>Fast booking</h3>
+            <p>Reserve in seconds with instant confirmation.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">🧭</div>
+            <h3>Flexible pickup</h3>
+            <p>Choose convenient pickup/drop-off locations.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">🔒</div>
+            <h3>Transparent pricing</h3>
+            <p>No hidden fees. Pay only for what you need.</p>
+        </div>
+    </div>
+</section>
+
+<app-notification-section></app-notification-section>

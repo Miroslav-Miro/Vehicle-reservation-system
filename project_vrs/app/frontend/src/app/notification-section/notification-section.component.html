@@ -1,0 +1,64 @@
+<!-- Floating bell -->
+<button class="notif-fab" (click)="togglePanel()" aria-label="Notifications">
+    🔔
+    <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+</button>
+
+<!-- Backdrop -->
+<div class="notif-overlay" *ngIf="panelOpen" (click)="togglePanel(false)"></div>
+
+<!-- Panel -->
+<aside class="notif-panel" [class.open]="panelOpen" role="dialog" aria-label="Notifications" aria-live="polite">
+    <header class="panel__head">
+        <div class="left">
+            <span class="bell">🔔</span>
+            <h3>Notifications</h3>
+        </div>
+        <div class="right">
+            <button class="btn btn--ghost btn--sm" (click)="markAllRead()" [disabled]="unreadCount === 0">
+                Mark all read
+            </button>
+            <button class="close-btn" (click)="togglePanel(false)">×</button>
+        </div>
+    </header>
+
+    <section class="panel__body">
+        <ul class="notif-list" *ngIf="notifications.length; else emptyState">
+            <li class="notif" *ngFor="let n of notifications; trackBy: trackById" [class.unread]="!n.is_read">
+                <div class="notif__icon" [class.created]="n.type === 'created'"
+                    [class.cancelled]="n.type === 'cancelled'">
+                    <span *ngIf="n.type === 'created'">✅</span>
+                    <span *ngIf="n.type === 'cancelled'">❌</span>
+                    <span *ngIf="n.type !== 'created' && n.type !== 'cancelled'">🔔</span>
+                </div>
+
+                <div class="notif__body">
+                    <div class="row-1">
+                        <strong class="title">
+                            {{ n.type === 'created' ? 'Reservation created'
+                            : n.type === 'cancelled' ? 'Reservation cancelled'
+                            : 'Notification' }}
+                        </strong>
+                        <span class="time">{{ n.created_at | date:'short' }}</span>
+                    </div>
+
+                    <div class="row-2 message">{{ n.message }}</div>
+
+                    <div class="row-3 meta">
+                        <span class="pill">{{ n.type || 'info' }}</span>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <ng-template #emptyState>
+            <div class="empty">
+                <div class="empty__icon">😌</div>
+                <div class="empty__text">
+                    No notifications yet.
+                    <div class="hint">You’ll see reservation updates here in real time.</div>
+                </div>
+            </div>
+        </ng-template>
+    </section>
+</aside>

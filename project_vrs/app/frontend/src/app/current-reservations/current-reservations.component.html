@@ -1,0 +1,89 @@
+<div class="reservations" *ngIf="reservations?.length; else empty">
+    <article class="card" *ngFor="let res of reservations">
+        <header class="card__header">
+            <h2>#{{ res.id }}</h2>
+            <span class="chip chip--active">{{ res.status.status }}</span>
+        </header>
+
+        <div class="card__body">
+            <div class="row">
+                <div class="col">
+                    <div class="label">User</div>
+                    <div class="value">{{ res.user }}</div>
+                </div>
+                <div class="col">
+                    <div class="label">Total</div>
+                    <div class="value">${{ res.total_price }}</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="label">Start</div>
+                    <div class="value">{{ res.start_date | date:'mediumDate' }}</div>
+                </div>
+                <div class="col">
+                    <div class="label">End</div>
+                    <div class="value">{{ res.end_date | date:'mediumDate' }}</div>
+                </div>
+            </div>
+
+            <div class="locations">
+                <div class="loc">
+                    <div class="loc__title">Pickup</div>
+                    <div class="loc__name">{{ res.pickup_location.location_name }}</div>
+                    <div class="loc__addr">{{ res.pickup_location.address }}</div>
+                </div>
+                <div class="loc">
+                    <div class="loc__title">Drop-off</div>
+                    <div class="loc__name">{{ res.dropoff_location.location_name }}</div>
+                    <div class="loc__addr">{{ res.dropoff_location.address }}</div>
+                </div>
+            </div>
+
+            <div class="vehicles">
+                <div class="veh" *ngFor="let v of res.vehicles">
+                    <div class="veh__line">
+                        <span class="veh__label">Plate</span>
+                        <span class="veh__value">{{ v.physical_vehicle.car_plate_number }}</span>
+                    </div>
+                    <div class="veh__line">
+                        <span class="veh__label">Model</span>
+                        <span class="veh__value">
+                            {{ v.physical_vehicle.vehicle.model.brand.brand_name }}
+                            {{ v.physical_vehicle.vehicle.model.model_name }}
+                        </span>
+                    </div>
+                    <div class="veh__line">
+                        <span class="veh__label">Seats</span>
+                        <span class="veh__value">{{ v.physical_vehicle.vehicle.amount_seats }}</span>
+                    </div>
+                    <div class="veh__line">
+                        <span class="veh__label">Engine</span>
+                        <span class="veh__value">{{ v.physical_vehicle.vehicle.engine_type.engine_type }}</span>
+                    </div>
+                    <div class="veh__line">
+                        <span class="veh__label">Price/day</span>
+                        <span class="veh__value">${{ v.physical_vehicle.vehicle.price_per_day }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="card__footer">
+            <button
+                class="btn btn--danger"
+                [disabled]="res._busy"
+                (click)="cancel(res)"
+            >
+            {{ res._busy ? 'Cancelling…' : 'Cancel' }}
+    </button>
+        </footer>
+    </article>
+</div>
+
+<ng-template #empty>
+    <div class="empty">No active reservations.</div>
+</ng-template>
+
+<app-notification-section></app-notification-section>

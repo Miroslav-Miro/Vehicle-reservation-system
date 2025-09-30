@@ -1,0 +1,22 @@
+FROM node:18-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y python3 make g++ && apt-get clean
+
+COPY ./frontend/package*.json ./
+
+RUN npm ci --force
+
+RUN npm install -g @angular/cli
+RUN ng version
+
+COPY ./frontend ./
+
+COPY start_frontend.sh /app/start_frontend.sh
+
+RUN chmod +x /app/start_frontend.sh
+
+EXPOSE 4200
+
+CMD ["sh", "/app/start_frontend.sh"]

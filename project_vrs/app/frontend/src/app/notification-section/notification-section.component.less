@@ -1,0 +1,257 @@
+/* Palette (match your app) */
+@dark: #2C2A4A;
+@mid: #4F518C;
+@soft: #907AD6;
+@ink: #ffffff;
+@muted: #cfd0df;
+
+/* Floating bell */
+.notif-fab {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 70;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    background: @mid;
+    color: @ink;
+    font-size: 1.2rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
+    cursor: pointer;
+    transition: transform .12s ease, background .12s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        background: lighten(@mid, 6%);
+    }
+
+    .badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 .35rem;
+        border-radius: 999px;
+        background: @soft;
+        color: @ink;
+        border: 1px solid rgba(0, 0, 0, .15);
+        font-weight: 800;
+        font-size: .78rem;
+        display: grid;
+        place-items: center;
+    }
+}
+
+/* Overlay */
+.notif-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    z-index: 75;
+}
+
+/* Panel */
+.notif-panel {
+    position: fixed;
+    z-index: 80;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(420px, 92vw);
+    transform: translateX(110%);
+    transition: transform .22s ease;
+    background: rgba(14, 12, 12, 0.22);
+    border-left: 1px solid rgba(255, 255, 255, .12);
+    backdrop-filter: blur(6px);
+    box-shadow: -12px 0 28px rgba(0, 0, 0, .28);
+    color: @ink;
+    display: grid;
+    grid-template-rows: auto 1fr;
+
+    &.open {
+        transform: translateX(0);
+    }
+}
+
+.panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem .9rem;
+    border-bottom: 1px dashed rgba(255, 255, 255, .14);
+
+    .left {
+        display: inline-flex;
+        gap: .6rem;
+        align-items: center;
+
+        .bell {
+            font-size: 1.2rem;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1.02rem;
+        }
+    }
+
+    .right {
+        display: inline-flex;
+        gap: .4rem;
+        align-items: center;
+
+        .btn {
+            padding: .35rem .6rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            background: transparent;
+            color: @ink;
+            cursor: pointer;
+
+            &--ghost:hover {
+                background: rgba(255, 255, 255, .08);
+            }
+
+            &--sm {
+                font-size: .9rem;
+            }
+        }
+
+        .close-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            background: rgba(255, 255, 255, .06);
+            color: @ink;
+            cursor: pointer;
+
+            &:hover {
+                background: rgba(255, 255, 255, .12);
+            }
+        }
+    }
+}
+
+.panel__body {
+    overflow: auto;
+    padding: .8rem .9rem 1rem;
+}
+
+/* List */
+.notif-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .6rem;
+}
+
+.notif {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .7rem;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 14px;
+    padding: .7rem .75rem;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, .20);
+        background: rgba(255, 255, 255, .07);
+        transform: translateY(-1px);
+    }
+
+    &.unread {
+        box-shadow: 0 0 0 2px fade(@soft, 22%) inset;
+    }
+}
+
+.notif__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, fade(@soft, 22%), fade(@mid, 10%));
+    color: @ink;
+    font-size: 1.05rem;
+
+    &.created {
+        background: linear-gradient(180deg, fade(#3ecf8e, 30%), fade(@mid, 8%));
+    }
+
+    &.cancelled {
+        background: linear-gradient(180deg, fade(#ff6b6b, 30%), fade(@mid, 8%));
+    }
+}
+
+.notif__body {
+    .row-1 {
+        display: flex;
+        align-items: baseline;
+        gap: .6rem;
+
+        .title {
+            font-size: .98rem;
+            letter-spacing: .2px;
+        }
+
+        .time {
+            color: @muted;
+            font-size: .86rem;
+        }
+    }
+
+    .row-2.message {
+        margin-top: .25rem;
+        color: @muted;
+        line-height: 1.35;
+    }
+
+    .row-3.meta {
+        margin-top: .4rem;
+        display: inline-flex;
+        gap: .4rem;
+        flex-wrap: wrap;
+    }
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: .18rem .45rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+    color: @ink;
+    font-size: .78rem;
+}
+
+/* Empty */
+.empty {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 1.2rem .4rem;
+    color: @muted;
+
+    &__icon {
+        font-size: 1.6rem;
+        margin-bottom: .35rem;
+    }
+
+    .hint {
+        font-size: .9rem;
+        opacity: .9;
+    }
+}

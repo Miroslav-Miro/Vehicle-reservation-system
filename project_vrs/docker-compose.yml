@@ -3,6 +3,7 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile.backend
+    image: vrs-backend:latest
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./app:/app
@@ -11,7 +12,22 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.frontend
+    command: ng serve --host 0.0.0.0
+    volumes:
+      - ./app/frontend:/app/frontend
+      - /app/frontend/node_modules
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+
   db:
     image: postgres:15
     environment:
@@ -22,6 +38,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SQL_USER} -d ${SQL_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   pgadmin:
     image: dpage/pgadmin4
@@ -31,6 +53,39 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - db
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server","--appendonly","yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  celery_worker:
+    image: vrs-backend:latest
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        celery -A backend worker -l info
 
 volumes:
-  postgres_data:
+  postgres_data: {}
+  redis_data: {}

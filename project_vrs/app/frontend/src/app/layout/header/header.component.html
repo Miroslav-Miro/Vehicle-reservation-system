@@ -1,0 +1,26 @@
+<header class="header">
+  <div class="logo">Rent a car</div>
+
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Home</a>
+    <a routerLink="/vehicles" routerLinkActive="active">Vehicles</a>
+      <div class="dropdown">
+        <a class="dropbtn">Reservations ▾</a>
+        <div class="dropdown-content">
+          <a routerLink="/reservations/current" routerLinkActive="active">Current Reservations</a>
+          <a routerLink="/reservations/history" routerLinkActive="active">Reservation History</a>
+        </div>
+      </div>
+
+    <!-- Show Login/Register when NOT logged in -->
+    <ng-container *ngIf="!(auth.isAuthed$ | async); else authed">
+      <a routerLink="/auth/login" routerLinkActive="active">Login</a>
+      <!-- <a routerLink="/auth/register" routerLinkActive="active">Register</a> -->
+    </ng-container>
+
+    <!-- Show Logout when logged in -->
+    <ng-template #authed>
+      <button class="logout" (click)="logout()">Logout</button>
+    </ng-template>
+  </nav>
+</header>
