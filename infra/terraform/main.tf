@@ -83,7 +83,7 @@ resource "azurerm_linux_web_app" "backend" {
 
     application_stack {
       docker_image_name   = "${azurerm_container_registry.acr.login_server}/vrs-backend:${var.backend_image_tag}"
-      docker_registry_url = azurerm_container_registry.acr.login_server
+      docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
     }
   }
 
@@ -124,7 +124,7 @@ resource "azurerm_linux_web_app" "worker" {
     always_on         = true
     application_stack {
       docker_image_name   = "${azurerm_container_registry.acr.login_server}/vrs-backend:${var.backend_image_tag}"
-      docker_registry_url = azurerm_container_registry.acr.login_server
+      docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
     }
     app_command_line = "sh -c 'celery -A backend worker -l info'"
   }
