@@ -105,7 +105,8 @@ resource "azurerm_linux_web_app" "backend" {
     REDIS_PORT                        = 6379
     CELERY_BROKER_URL                 = "redis://${azurerm_redis_cache.redis.hostname}:6379/0"
     CELERY_RESULT_BACKEND             = "django-db"
-    ALLOWED_HOSTS                     = join(",", [azurerm_linux_web_app.backend.default_hostname, "localhost", "127.0.0.1"]) 
+    # Avoid self-references; allow Azure Web Apps default domains and local dev
+    ALLOWED_HOSTS                     = join(",", [".azurewebsites.net", "localhost", "127.0.0.1"]) 
     CORS_ALLOWED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
     CSRF_TRUSTED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
   }
@@ -146,7 +147,8 @@ resource "azurerm_linux_web_app" "worker" {
     REDIS_PORT                        = 6379
     CELERY_BROKER_URL                 = "redis://${azurerm_redis_cache.redis.hostname}:6379/0"
     CELERY_RESULT_BACKEND             = "django-db"
-    ALLOWED_HOSTS                     = join(",", [azurerm_linux_web_app.worker.default_hostname, "localhost", "127.0.0.1"]) 
+    # Avoid self-references; allow Azure Web Apps default domains and local dev
+    ALLOWED_HOSTS                     = join(",", [".azurewebsites.net", "localhost", "127.0.0.1"]) 
     CORS_ALLOWED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
     CSRF_TRUSTED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
   }
