@@ -65,7 +65,7 @@ resource "azurerm_redis_cache" "redis" {
   capacity            = var.redis_capacity
   family              = "C"
   sku_name            = var.redis_sku_name
-  enable_non_ssl_port = true
+  non_ssl_port_enabled = true
   minimum_tls_version = "1.2"
 }
 
@@ -106,8 +106,8 @@ resource "azurerm_linux_web_app" "backend" {
     CELERY_BROKER_URL                 = "redis://${azurerm_redis_cache.redis.hostname}:6379/0"
     CELERY_RESULT_BACKEND             = "django-db"
     ALLOWED_HOSTS                     = join(",", [azurerm_linux_web_app.backend.default_hostname, "localhost", "127.0.0.1"]) 
-    CORS_ALLOWED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_hostname}"]))
-    CSRF_TRUSTED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_hostname}"]))
+    CORS_ALLOWED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
+    CSRF_TRUSTED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
   }
 }
 
@@ -147,8 +147,8 @@ resource "azurerm_linux_web_app" "worker" {
     CELERY_BROKER_URL                 = "redis://${azurerm_redis_cache.redis.hostname}:6379/0"
     CELERY_RESULT_BACKEND             = "django-db"
     ALLOWED_HOSTS                     = join(",", [azurerm_linux_web_app.worker.default_hostname, "localhost", "127.0.0.1"]) 
-    CORS_ALLOWED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_hostname}"]))
-    CSRF_TRUSTED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_hostname}"]))
+    CORS_ALLOWED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
+    CSRF_TRUSTED_ORIGINS              = join(",", concat(var.cors_allowed_origins, ["https://${azurerm_static_site.frontend.default_host_name}"]))
   }
 }
 
@@ -159,4 +159,3 @@ resource "azurerm_static_site" "frontend" {
   sku_tier            = "Free"
   sku_size            = "Free"
 }
-
