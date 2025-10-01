@@ -2,6 +2,12 @@ from rest_framework import serializers
 from ..models import PhysicalVehicle, Location, Brand, Model, VehicleType, EngineType
 
 class PublicVehicleAvailabilitySerializer(serializers.Serializer):
+    """
+    Serializer for public vehicle availability.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
     vehicle_id = serializers.IntegerField()
     brand = serializers.CharField()
     model = serializers.CharField()
@@ -28,13 +34,25 @@ class LocationSerializer(serializers.ModelSerializer):
         fields = ["id","location_name", "address"]
 
 class ModelSerializerForFilter(serializers.ModelSerializer):
+    """
+    Model details for filter.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
 
     class Meta:
         model = Model
         fields = ["id", "model_name"]
 
 class BrandModelSerializerForFilter(serializers.ModelSerializer):
-    
+    """
+    Brand details for filter.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
+
     models = ModelSerializerForFilter(many=True, source="model_set")
 
     class Meta:
@@ -42,12 +60,24 @@ class BrandModelSerializerForFilter(serializers.ModelSerializer):
         fields = ["id", "brand_name","models"]
 
 class VehicleTypeSerializerForFilter(serializers.ModelSerializer):
+    """
+    Vehicle tpye details for filter.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
     
     class Meta:
         model = VehicleType
         fields = ["id", "vehicle_type"]
 
 class EngineTypeSerializerForFilter(serializers.ModelSerializer):
+    """
+    Engine type details for filter.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
 
     class Meta:
         model = EngineType

@@ -2,6 +2,14 @@ from rest_framework import serializers
 from ..models import Notification
 
 class NotificationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Notification model.
+
+    :param serializers: _serializers_
+    :type serializers: _serializers_
+    :return: _serialized notification data
+    :rtype: _serialized data_
+    """
     class Meta:
         model = Notification
         fields = [

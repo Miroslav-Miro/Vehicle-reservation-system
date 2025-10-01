@@ -4,6 +4,10 @@ from ..serializers.notification_serializer import NotificationSerializer
 from ..custom_permissions.mixed_role_permissions import RoleRequired
 
 class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A viewset for viewing user notifications
+    """
+
     serializer_class = NotificationSerializer
 
     def get_permissions(self):

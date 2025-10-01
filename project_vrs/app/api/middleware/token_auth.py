@@ -25,6 +25,11 @@ def _resolve_user_and_role(token):
         return AnonymousUser(), ""
 
 class TokenAuthMiddleware:
+    """
+    Custom middleware that takes a token from the query string
+    and authenticates via JWT, populating scope["user"] and scope["user_role"].
+    """
+
     def __init__(self, inner):
         self.inner = inner
 
@@ -45,5 +50,13 @@ class TokenAuthMiddleware:
         return await self.inner(scope, receive, send)
 
 def TokenAuthMiddlewareStack(inner):
+    """
+    Custom middleware stack that includes TokenAuthMiddleware.
+
+    :param inner: The inner application to wrap.
+    :type inner: ASGI application
+    :return: The wrapped ASGI application with token authentication.
+    :rtype: ASGI application
+    """
     # Don’t import AuthMiddleware in __call__, just wrap here
     return AuthMiddlewareStack(TokenAuthMiddleware(inner))
