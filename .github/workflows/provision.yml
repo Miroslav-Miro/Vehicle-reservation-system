@@ -124,11 +124,8 @@ jobs:
             if [ "$HAS_TARGET" != "0" ]; then
               terraform import -no-color azurerm_postgresql_flexible_server_database.db "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME/databases/$DB_TARGET" || true
             fi
-            # Import firewall rule 'allow-all' if it already exists on the server
-            FW_PRESENT=$(az postgres flexible-server firewall-rule show -g "$RG" -s "$PG_NAME" -n allow-all --query name -o tsv 2>/dev/null || true)
-            if [ -n "$FW_PRESENT" ]; then
-              terraform import -no-color azurerm_postgresql_flexible_server_firewall_rule.allow_all "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME/firewallRules/allow-all" || true
-            fi
+            # Import firewall rule 'allow-all' (ignore if missing)
+            terraform import -no-color azurerm_postgresql_flexible_server_firewall_rule.allow_all "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME/firewallRules/allow-all" || true
           fi
 
       - name: Clean incorrect DB import (azure_maintenance)
