@@ -130,12 +130,23 @@ ASGI_APPLICATION = "backend.asgi.application"
 
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
+REDIS_URL = os.getenv("REDIS_URL")
+
+# Build Channels Redis hosts config supporting password or URL
+_channels_hosts = []
+if REDIS_URL:
+    _channels_hosts = [REDIS_URL]
+elif REDIS_PASSWORD:
+    _channels_hosts = [{"address": (REDIS_HOST, REDIS_PORT), "password": REDIS_PASSWORD}]
+else:
+    _channels_hosts = [(REDIS_HOST, REDIS_PORT)]
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(REDIS_HOST, REDIS_PORT)],
+            "hosts": _channels_hosts,
         },
     },
 }
