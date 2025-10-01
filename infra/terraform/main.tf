@@ -107,7 +107,9 @@ resource "azurerm_linux_web_app" "backend" {
     DATABASE                          = "postgres"
     REDIS_HOST                        = azurerm_redis_cache.redis.hostname
     REDIS_PORT                        = 6379
-    CELERY_BROKER_URL                 = "redis://${azurerm_redis_cache.redis.hostname}:6379/0"
+    REDIS_PASSWORD                    = azurerm_redis_cache.redis.primary_access_key
+    REDIS_URL                         = "redis://:${azurerm_redis_cache.redis.primary_access_key}@${azurerm_redis_cache.redis.hostname}:6379/0"
+    CELERY_BROKER_URL                 = "redis://:${azurerm_redis_cache.redis.primary_access_key}@${azurerm_redis_cache.redis.hostname}:6379/0"
     CELERY_RESULT_BACKEND             = "django-db"
     # Avoid self-references; allow Azure Web Apps default domains and local dev
     ALLOWED_HOSTS                     = join(",", [".azurewebsites.net", "localhost", "127.0.0.1"]) 
@@ -149,7 +151,9 @@ resource "azurerm_linux_web_app" "worker" {
     DATABASE                          = "postgres"
     REDIS_HOST                        = azurerm_redis_cache.redis.hostname
     REDIS_PORT                        = 6379
-    CELERY_BROKER_URL                 = "redis://${azurerm_redis_cache.redis.hostname}:6379/0"
+    REDIS_PASSWORD                    = azurerm_redis_cache.redis.primary_access_key
+    REDIS_URL                         = "redis://:${azurerm_redis_cache.redis.primary_access_key}@${azurerm_redis_cache.redis.hostname}:6379/0"
+    CELERY_BROKER_URL                 = "redis://:${azurerm_redis_cache.redis.primary_access_key}@${azurerm_redis_cache.redis.hostname}:6379/0"
     CELERY_RESULT_BACKEND             = "django-db"
     # Avoid self-references; allow Azure Web Apps default domains and local dev
     ALLOWED_HOSTS                     = join(",", [".azurewebsites.net", "localhost", "127.0.0.1"]) 
