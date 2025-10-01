@@ -113,6 +113,17 @@ jobs:
           if az staticwebapp show -g "$RG" -n "$SWA_NAME" >/dev/null 2>&1; then
             terraform import -no-color azurerm_static_site.frontend "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.Web/staticSites/$SWA_NAME" || true
           fi
+          # Import PostgreSQL Flexible Server if it already exists
+          PG_NAME=$(az postgres flexible-server list -g "$RG" --query "[?starts_with(name, '${SAN}-pg')].name | [0]" -o tsv || true)
+          if [ -n "$PG_NAME" ]; then
+            terraform import -no-color azurerm_postgresql_flexible_server.pg "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME" || true
+            # Import the application database if present
+            DB_NAME="${TF_VAR_sql_database_name:-vrsdb}"
+            # Prefer existing non-system DB if found
+            EXISTING_DB=$(az postgres flexible-server db list -g "$RG" -s "$PG_NAME" --query "[?name!='postgres'].name | [0]" -o tsv || true)
+            if [ -n "$EXISTING_DB" ]; then DB_NAME="$EXISTING_DB"; fi
+            terraform import -no-color azurerm_postgresql_flexible_server_database.db "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME/databases/$DB_NAME" || true
+          fi
           # Do not import Linux Web Apps by old names; Terraform will create unique-suffixed apps
 
       - name: Terraform Apply
