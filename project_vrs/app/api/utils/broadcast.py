@@ -8,6 +8,15 @@ def broadcast_notification(message: dict, *, user_id: int | None = None, roles: 
     """
     Persist a DB notification for the given user_id and push WS messages.
     Runs AFTER the surrounding DB transaction commits, so readers immediately see the row.
+
+    :param message: The notification message to send.
+    :type message: dict
+    :param user_id: The ID of the user to notify (optional).
+    :type user_id: int | None
+    :param roles: List of role names to notify (optional).
+    :type roles: list[str] | None
+    :return: None
+    :rtype: None
     """
 
     def _do():

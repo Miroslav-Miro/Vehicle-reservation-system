@@ -3,6 +3,15 @@ from rest_framework import serializers
 
 
 def luhn_ok(num: str) -> bool:
+    """
+    Simple Luhn algorithm check for card numbers.
+
+    :param num: _card number as string_
+    :type num: str
+    :return: _true if valid, else false_
+    :rtype: bool
+    """
+
     total, alt = 0, False
     for ch in reversed(num):
         if not ch.isdigit():
@@ -31,6 +40,15 @@ class MockCardPaymentSerializer(serializers.Serializer):
     simulate = serializers.ChoiceField(choices=["success", "fail"], required=False)
 
     def validate_card_number(self, value: str) -> str:
+        """
+        Validate card number with Luhn algorithm.
+
+        :param value: _card number as string_
+        :type value: str
+        :return: the cleaned card number (digits only)
+        :rtype: str
+        """
+
         digits = value.replace(" ", "").replace("-", "")
         if not (12 <= len(digits) <= 19) or not digits.isdigit():
             raise serializers.ValidationError("Card number must be 12–19 digits.")

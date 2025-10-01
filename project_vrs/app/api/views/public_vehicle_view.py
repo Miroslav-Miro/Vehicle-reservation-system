@@ -17,6 +17,10 @@ from ..serializers.public_vehicle_serializer import (
     EngineTypeSerializerForFilter
 )
 class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
+    """
+    ViewSet for public vehicle availability.
+    """
+
     permission_classes = [AllowAny]
 
     def _parse_range(self, start_str, end_str):
@@ -107,6 +111,14 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
         return Response(PublicVehicleAvailabilitySerializer(data).data)
 
     def list(self, request):
+        """
+        List endpoint for conceptual vehicles with availability counts.
+
+        :param request: _request object containing query parameters_
+        :type request: _Request_
+        :return: _serialized list of vehicles with availability counts_
+        :rtype: _list of PublicVehicleAvailabilitySerializer_
+        """
         location_id = request.query_params.get("location_id")
         start_str = request.query_params.get("start")
         end_str = request.query_params.get("end")
@@ -247,6 +259,10 @@ class PublicVehicleAvailabilityViewSet(viewsets.ViewSet):
 
 
 class LocationViewSetFiltering(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only viewset for listing and retrieving locations.
+    """
+
     queryset = Location.objects.all().order_by("location_name", "address")
     serializer_class = LocationSerializer
     permission_classes = [permissions.AllowAny]
@@ -262,12 +278,19 @@ class BrandModelViewSetFiltering(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 class VehicleTypeViewSetFiltering(viewsets.ReadOnlyModelViewSet):
+    """
+    Vehicle type details for filter
+    """
+
     queryset = VehicleType.objects.all().order_by("vehicle_type")
     serializer_class = VehicleTypeSerializerForFilter
     permission_classes = [permissions.AllowAny]
     pagination_class = None
 
 class EngineTypeViewSetFiltering(viewsets.ReadOnlyModelViewSet):
+    """
+    Engine type details for filter.
+    """
     queryset = EngineType.objects.all().order_by("engine_type")
     serializer_class = EngineTypeSerializerForFilter
     permission_classes = [permissions.AllowAny]

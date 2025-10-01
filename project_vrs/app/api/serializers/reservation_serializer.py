@@ -265,11 +265,26 @@ class PhysicalVehicleReservationSerializer(serializers.ModelSerializer):
 HOLD_MINUTES = int(getattr(settings, "RESERVATION_HOLD_MINUTES", 15))
 
 class LineItemSerializer(serializers.Serializer):
+    """
+    A line item in a reservation request vehicle id + quantity.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers: module
+    """
     vehicle_id = serializers.IntegerField(min_value=1)
     qty = serializers.IntegerField(min_value=1)
 
 class ReservationCreateSerializer(serializers.Serializer):
     # match the frontend keys
+    """
+    Serializer for creating a reservation.
+
+    :param serializers: The Django REST framework serializers module.
+    :type serializers:  module
+    :return: the validated data
+    :rtype: _dict_
+    """
+
     start = serializers.DateTimeField()
     end = serializers.DateTimeField()
     start_location_id = serializers.IntegerField()
