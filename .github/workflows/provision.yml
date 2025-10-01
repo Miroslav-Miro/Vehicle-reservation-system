@@ -117,12 +117,24 @@ jobs:
           PG_NAME=$(az postgres flexible-server list -g "$RG" --query "[?starts_with(name, '${SAN}-pg')].name | [0]" -o tsv || true)
           if [ -n "$PG_NAME" ]; then
             terraform import -no-color azurerm_postgresql_flexible_server.pg "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME" || true
-            # Import the application database if present
-            DB_NAME="${TF_VAR_sql_database_name:-vrsdb}"
-            # Prefer existing non-system DB if found
-            EXISTING_DB=$(az postgres flexible-server db list -g "$RG" -s "$PG_NAME" --query "[?name!='postgres'].name | [0]" -o tsv || true)
-            if [ -n "$EXISTING_DB" ]; then DB_NAME="$EXISTING_DB"; fi
-            terraform import -no-color azurerm_postgresql_flexible_server_database.db "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME/databases/$DB_NAME" || true
+            # Import only the intended application database if it exists; never import Azure-managed DBs
+            DB_TARGET="${TF_VAR_sql_database_name:-vrsdb}"
+            # Check if the target DB exists on the server
+            HAS_TARGET=$(az postgres flexible-server db list -g "$RG" -s "$PG_NAME" --query "[?name=='$DB_TARGET'] | length(@)" -o tsv || echo 0)
+            if [ "$HAS_TARGET" != "0" ]; then
+              terraform import -no-color azurerm_postgresql_flexible_server_database.db "/subscriptions/$SUB/resourceGroups/$RG/providers/Microsoft.DBforPostgreSQL/flexibleServers/$PG_NAME/databases/$DB_TARGET" || true
+            fi
+          fi
+
+      - name: Clean incorrect DB import (azure_maintenance)
+        working-directory: infra/terraform
+        run: |
+          set -euo pipefail
+          if terraform state list 2>/dev/null | grep -q '^azurerm_postgresql_flexible_server_database\.db$'; then
+            # If the managed DB in state is azure_maintenance, remove it from state to avoid deletion attempts
+            if terraform state show azurerm_postgresql_flexible_server_database.db | grep -q 'name *= *"azure_maintenance"'; then
+              terraform state rm azurerm_postgresql_flexible_server_database.db || true
+            fi
           fi
           # Do not import Linux Web Apps by old names; Terraform will create unique-suffixed apps
 
